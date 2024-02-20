@@ -1,0 +1,248 @@
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px; /* 增加一些內邊距 */
+    background-color: #ffffff;
+}
+
+/* Header Styles */
+header {
+    background-color: #50b3a2;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: x-large;
+}
+
+#logo{
+    width: 50px; 
+    height: 50px;
+}
+
+/* Navigation Styles */
+nav ul {
+    background-color: #333;
+    overflow: hidden;
+    color: white;
+}
+
+nav ul li {
+    float: left;
+    display: inline;
+    padding: 14px 16px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+}
+
+/* Main Content Styles */
+main {
+    padding: 20px;
+    background-color: #fff;
+    margin: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Existing Styles (Unchanged) */
+
+/* Navigation Styles */
+nav {
+    position: relative; /* Adding relative positioning */
+}
+
+.navList li a:hover {
+    color: rgb(22, 135, 255); /* 或者使用您喜欢的蓝色调，如 #007bff 为Bootstrap的主题蓝 */
+}
+
+#userLoginStatus {
+    position: absolute; /* Setting login button to absolute positioning */
+    right: 0; /* Aligning to the right */
+    top: 50%; /* Vertically centering */
+    transform: translateY(-50%); /* Ensuring complete centering */
+}
+
+/* Dropdown Menu Styles */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    max-height: 300px; /* Setting max height */
+    overflow-y: auto; /* Adding scroll */
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    right: 0; /* Ensuring the dropdown menu is on the right */
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Additional Styles (Unchanged) */
+
+/* #panorama 的樣式 */
+#panorama {
+    width: calc(100% - 40px); /* 調整寬度，減去內邊距的寬度 */
+    max-width: 800px; /* 最大寬度為800px */
+    height: 500px; /* 設置高度 */
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    margin-bottom: 20px; /* 增加一些底部邊距 */
+}
+
+
+
+
+
+
+
+#questionDisplay {
+    z-index: 1000;
+}
+
+#chatButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+#chatWindow {
+    display: none;
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    width: 300px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 20px;
+}
+
+#mytext {
+    width: calc(100% - 20px);
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-bottom: 12px;
+    padding: 8px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+}
+
+.user-message {
+    text-align: right;
+}
+
+.bot-message {
+    text-align: left;
+}
+
+.btn-group {
+    margin-bottom: 10px;
+}
+
+#buttonContainer {
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+.sub-buttons {
+    display: none;
+}
+
+
+
+/* 將鼠標懸停在按鈕上時的效果 */
+.btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 點擊按鈕時的效果 */
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: none;
+}
+
+
+/* 多選題編輯表單樣式 */
+#multiChoiceForm {
+    background-color: #ffffff; /* 設置白色背景 */
+    padding: 20px; /* 添加內邊距 */
+    border-radius: 5px; /* 圓角邊框 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加陰影效果 */
+    max-width: 500px; /* 最大寬度限制 */
+    margin: 20px auto; /* 水平居中顯示 */
+}
+
+#multiChoiceForm h3 {
+    color: #333; /* 標題顏色 */
+    margin-bottom: 20px; /* 標題下方的間距 */
+}
+
+#multiChoiceForm input[type="text"] {
+    width: 100%; /* 輸入框寬度 */
+    padding: 10px; /* 輸入框內邊距 */
+    margin-bottom: 10px; /* 輸入框間的間距 */
+    border: 1px solid #ccc; /* 邊框顏色 */
+    border-radius: 4px; /* 輸入框圓角 */
+}
+
+#multiChoiceForm input[type="radio"],
+#multiChoiceForm input[type="checkbox"] {
+    margin-right: 10px; /* 勾選框與文字的間距 */
+}
+
+#multiChoiceForm label {
+    font-size: 16px; /* 標籤字體大小 */
+}
+
+/* 多選題動態內容的基本樣式 */
+div#multiChoiceForm, div#questionDisplay {
+    display: none; /* 默认隐藏容器 */
+    background-color: #ffffff; /* 設置背景顏色 */
+    padding: 20px; /* 設置內邊距 */
+    border-radius: 5px; /* 設置邊角圓滑 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加陰影 */
+    margin-bottom: 20px; /* 設置下邊距 */
+    max-width: 600px; /* 最大寬度限制，確保布局的一致性 */
+    margin: 20px auto; /* 水平居中 */
+}
+
+label {
+    display: block; /* 使標籤獨占一行 */
+    margin-bottom: 10px; /* 設置標籤間距 */
+    color: #333; /* 文字顏色 */
+    font-size: 16px; /* 文字大小 */
+}
+
+input[type="text"] {
+    width: 100%; /* 輸入框寬度為容器寬度 */
+    padding: 10px; /* 內邊距 */
+    margin-bottom: 10px; /* 與下一元素的間距 */
+    border: 1px solid #ccc; /* 邊框顏色和樣式 */
+    border-radius: 4px; /* 邊框圓角 */
+    box-sizing: border-box; /* 盒子模型設定，防止邊框影響最終尺寸 */
+}
+
+  

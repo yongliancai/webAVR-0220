@@ -1,0 +1,3280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hot spots</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-storage.js"></script>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzn3IemuM34ccxPxJS3ApvhZJfs-8XSPw&libraries=places,directions&callback=initMap"
+    ></script>
+    <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+
+    <link rel="stylesheet" href="common.css" />
+    <style>
+      
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a href="#">
+          <img src="slogo.png" style="width: 130px; height: 130px" />
+        </a>
+      </div>
+      <nav>
+          <ul class="navList">
+              <li><a href="showCourse.html" >編輯區</a></li>
+              <li><a href="universe.html" >共享區</a></li>
+              <li><a href="personal.html" >個人頁</a></li>
+              <li><a href="jistsi.html" >直播</a></li>
+              <li id="userLoginStatus" class="dropdown">
+                  <a href="#" id="loginLink" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">登入</a>
+                  <!-- 下拉選單的部分 -->
+                  <div id="dropdownMenu" class="dropdown-menu">
+                      <a href="personal.html" class="dropdown-item">個人資料</a>
+                      <a href="settings.html" class="dropdown-item">設定</a>
+                      <a href="#" id="logout" class="dropdown-item">登出</a>
+                  </div>
+              </li>
+          </ul>
+      </nav>
+  </header>
+
+
+  <div class="container">
+    <div id="panoramaDiv" class="row justify-content-center">
+        <div class="col-md-8">
+            <div id="panorama"></div>
+        </div>
+        <div id="exploreCardContainerStu"></div>
+    </div>
+    <!-- <div id="tooltip" class="tooltip"></div> -->
+    <div id="yawPitchDiv"class="row justify-content-center">
+      <div class="col-md-8 mb-4">
+        <div id="yawPitch"></div>
+      </div>
+    </div>
+
+
+    <button id="uploadAroButton" onclick="initializeUploadButton()">上傳檔案</button>
+
+    <div class="row justify-content-center " id="buttonContainer">
+      <div class="col-md-8">
+          <div class="btn-toolbar" role="toolbar" aria-label="管理按鈕">
+              <div class="btn-group me-2" role="group" aria-label="標記管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('hotSpot')">標記</button>
+              </div>
+              <div class="btn-group me-2" role="group" aria-label="傳送管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleImageUploadSection()">傳送</button>
+              </div>
+              <div class="btn-group me-2" role="group" aria-label="探索管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('explore')">探索</button>
+              </div>
+              <div class="btn-group me-2" role="group" aria-label="多選管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('multi')">多選</button>
+              </div>
+              <div class="btn-group me-2" role="group" aria-label="地標管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('location')">地標</button>
+              </div>
+              <div class="btn-group me-2" role="group" aria-label="音訊管理">
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('sound')">音訊</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+
+        <div class="row justify-content-center" id="subButtonContainer">
+          <div class="col-md-8">
+              <div class="btn-group" role="group" aria-label="子按鈕">
+            <div class="sub-buttons" id="hotSpotButtons">
+              <button class="btn btn-primary" onclick="addHotSpot()">新增標記</button>
+              <button class="btn btn-warning" onclick="startDeleteMode()">刪除標記</button>
+            </div>  
+            <div class="sub-buttons" id="exploreButtons">
+              <button class="btn btn-primary" onclick="addExploreCard()">新增探索</button>
+              <button class="btn btn-warning" onclick="viewExploreCardDetails()">查看探索</button>
+            </div>
+            <div class="sub-buttons" id="multiButtons">
+              <button class="btn btn-primary" onclick="startmultiMode()">新增多選</button>
+              <button class="btn btn-warning" onclick="viewMultiChoiceQuestions()">查看多選</button>
+            </div>
+            <div class="sub-buttons" id="locationButtons">
+              <button class="btn btn-primary" onclick="addLocation()">新增地標</button>
+              <button class="btn btn-warning" onclick="startSeeLocationMode()">查看地標</button>
+            </div>
+            <div class="sub-buttons" id="soundButtons">
+              <button class="btn btn-primary" onclick="startSoundMode()">新增音訊</button>
+              <button class="btn btn-warning" onclick="startSeeSoundMode()">查看音訊</button>
+            </div>
+        </div>
+
+
+  <input id="pac-input" class="controls" type="text" placeholder="搜尋地點..." style="display: none" />
+  <div id="map" style="height: 400px; display: none"></div>
+
+  <div id="locationModal" style="display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.4)">
+      <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%">
+          <span id="closeModal" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer">&times;</span>
+          <h2>地標資訊</h2>
+          <button class="btn btn-success" onclick="planRoute()">規劃路線</button>
+          <div id="mapModal" style="height: 400px"></div>
+      </div>
+  </div>
+
+
+  <!-- HTML 结构 -->
+  <div id="soundEffectModal" style="display: none">
+      <button class="btn btn-primary" onclick="uploadSoundEffect()">上傳音效</button>
+      <button class="btn btn-warning" onclick="startRecording()">開始錄音</button>
+      <button id="stopRecording" class="btn btn-danger">停止錄音</button>
+      <!-- 其它元素 -->
+      <div id="recordingIndicator" style="display: none">錄音中...</div>
+      <div id="recordingTimer"></div>
+      <!-- 其它元素 -->
+      <!-- 其他音效信息的展示部分 -->
+      <button class="btn btn-danger" onclick="closeSoundEffectModal()">關閉</button>
+  </div>
+
+
+  <!-- 音效信息顯示模態框 -->
+  <div id="soundEffectInfoModal" style="display: none">
+      <div>音效名稱：<span id="soundEffectName"></span></div>
+      <audio id="soundEffectPlayer" controls></audio>
+      <button class="btn btn-danger" onclick="closeSoundEffectInfoModal()">關閉</button>
+  </div>
+
+  
+  <!-- 多選題編輯表單 -->
+  <div id="multiChoiceForm" style="display: none">
+      <h3>多選題編輯</h3>
+      <input type="text" id="question" placeholder="輸入題目" />
+      <div>
+          <input type="radio" name="correctAnswer" id="answerA" />
+          <input type="text" id="optionA" placeholder="選項 A" />
+      </div>
+      <div>
+          <input type="radio" name="correctAnswer" id="answerB" />
+          <input type="text" id="optionB" placeholder="選項 B" />
+      </div>
+      <div>
+          <input type="radio" name="correctAnswer" id="answerC" />
+          <input type="text" id="optionC" placeholder="選項 C" />
+      </div>
+      <div>
+          <input type="radio" name="correctAnswer" id="answerD" />
+          <input type="text" id="optionD" placeholder="選項 D" />
+      </div>
+      <!-- 新增提示場景勾選框 -->
+      <div>
+          <input type="checkbox" id="isHintScene" />
+          <label for="isHintScene">此為提示場景</label>
+      </div>
+      <button class="btn btn-success" onclick="submitMultiChoice()">完成</button>
+  </div>
+  <!-- 多選題顯示區域 -->
+  <div id="questionDisplay"></div>
+  <!-- 畫面中用於顯示探索卡片詳細資訊的容器 -->
+
+  <div id="exploreCardContainer"></div>
+
+  <!-- 傳送圖片上傳區域 -->
+  <div id="imageUploadSection" style="display: none">
+      <input type="file" id="imageUpload1" accept="image/*" />
+      <button class="btn btn-success" onclick="handleImageUpload()">上傳傳送圖片</button>
+  </div>
+
+  <button id="chatButton" class="btn btn-primary">Chat with GPT-4</button>
+  <div id="chatWindow">
+      <div id="chatHistory"></div>
+      <form id="chat-form">
+          <input type="text" id="mytext" placeholder="Enter your message" required />
+          <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+  </div>
+
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC4NzV-q4dBn_IytInpXlbbhEPaHJU9ULk",
+        authDomain: "webavr-b9273.firebaseapp.com",
+        projectId: "webavr-b9273",
+        storageBucket: "webavr-b9273.appspot.com",
+        messagingSenderId: "240463881336",
+        appId: "1:240463881336:web:6642598bf894378f2ff98d",
+        measurementId: "G-6Q7ZQ22WJN",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      var storage = firebase.storage();
+      var database = firebase.database();
+      var viewer;
+      var file;
+      var uploadInput = document.getElementById("uploadInput");
+      var user = firebase.auth().currentUser;
+      var email;
+      var username;
+      var fileName;
+      var tfileName;
+      var AroImgName; //現在顯示的360圖片
+      var AoneImgName; //本頁上傳的初始360圖片
+      var AtwoImgName; //本頁上傳的第二360圖片
+      var AthreeImgName; //本頁上傳的第三360圖片
+      var AfourImgName; //本頁上傳的第四360圖片
+      var AfiveImgName; //本頁上傳的第五360圖片
+      var convertedX;
+      var convertedY;
+      var imgURL;
+      var loginUserName;
+
+      var AImgName; //上一頁傳過來的值
+
+      var mapName;
+      var markerName;
+
+
+      function toggleSubButtons(buttonId) {
+        var subButtons = document.getElementById(buttonId + 'Buttons');
+        if (subButtons.style.display === "none") {
+            subButtons.style.display = "block";
+        } else {
+            subButtons.style.display = "none";
+        }
+    }
+
+function initializeUploadButton(){
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = function(event) {
+        var file = event.target.files[0];
+        var storageRef = storage.ref("images/" + file.name);
+        var uploadTask = storageRef.put(file);
+        uploadTask.on(
+          "state_changed",
+          function (snapshot) {
+            // 監聽上傳進度
+          },
+          function (error) {
+            // 上傳失敗處理
+            console.log("上傳至儲存空間失敗");
+          },
+          function () {
+            // 上傳成功處理
+            console.log("上傳至儲存空間成功");
+            uploadTask.snapshot.ref
+              .getDownloadURL()
+              .then(function (downloadURL) {
+                // 創建一個隱藏的a元素來下載圖片
+                var link = document.createElement("a");
+                link.href = downloadURL;
+                console.log("360url" + downloadURL);
+                link.download = file.name;
+                link.style.display = "none";
+                document.body.appendChild(link);
+                document.body.removeChild(link);
+
+                document.getElementById("uploadInput").src = downloadURL;
+                console.log("360url" + downloadURL);
+                localStorage.setItem("recentImageUrl", downloadURL);
+                // 假设这是您初始化 viewer 的代码
+                viewer = pannellum.viewer("panorama", {
+                  default: {
+                    firstScene: "scene_1",
+                    author: "Pannellum",
+                    sceneFadeDuration: 1000,
+                  },
+                  scenes: {
+                    scene_1: {
+                      type: "equirectangular",
+                      panorama: URL.createObjectURL(file), // 使用下載的圖片作為全景圖片
+                      hotSpotDebug: true,
+                      hotSpots: [],
+                    },
+                  },
+                });
+                // 定期检查 viewer 是否已加载完成
+                var checkViewerLoaded = setInterval(function () {
+                  if (viewer.isLoaded()) {
+                    clearInterval(checkViewerLoaded); // 停止定期检查
+                    loadAllHotspots();
+                    // 添加热点点击事件监听器
+                    addHotspotClickListener();
+                  }
+                }, 500);
+                viewer.on("scenechange", function () {
+                  var newSceneId = viewer.getScene();
+                  console.log("Scene changed to:", newSceneId);
+                  removeAllHotSpots(newSceneId); // 清除新场景的热点
+                  loadAllHotspots(); // 为新场景加载热点和传送点
+                  addHotspotClickListener();
+                });
+                fileName = file.name;
+                AoneImgName = fileName.split(".")[0];
+                AImgName = AoneImgName;
+                AroImgName = AoneImgName;
+                console.log("AoneImgName：" + AoneImgName);
+                console.log("AroImgName：" + AroImgName);
+                var SceneData = {
+                  fileName: AroImgName,
+                  URL: downloadURL,
+                };
+                var databaseRef = database.ref(
+                  username + "/360/" + AroImgName + "/scene_1/"
+                ); // 設定資料庫路徑
+                var oldDatabaseRef = database.ref(
+                  username +
+                    "/map/" +
+                    mapName +
+                    "/markers/" +
+                    markerName +
+                    "/360/" +
+                    AroImgName
+                ); // 設定資料庫路徑
+                var PDatabaseRef = database.ref("userPosition/" + AroImgName); // 設定資料庫路徑
+                // 檢查資料庫是否已存在相應的節點
+                databaseRef.once("value").then(function (snapshot) {
+                  if (snapshot.exists()) {
+                    // 如果節點存在，使用 update 方法更新資料
+                    databaseRef
+                      .update(SceneData)
+                      .then(function () {
+                        console.log("更新URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("更新URL節點失敗:", error);
+                      });
+                  } else {
+                    // 如果節點不存在，使用 set 方法創建新的資料節點
+                    databaseRef
+                      .set(SceneData)
+                      .then(function () {
+                        console.log("創建URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("創建URL節點失敗:", error);
+                      });
+                  }
+                });
+                oldDatabaseRef.once("value").then(function (snapshot) {
+                  if (snapshot.exists()) {
+                    // 如果節點存在，使用 update 方法更新資料
+                    databaseRef
+                      .update(SceneData)
+                      .then(function () {
+                        console.log("更新URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("更新URL節點失敗:", error);
+                      });
+                  } else {
+                    // 如果節點不存在，使用 set 方法創建新的資料節點
+                    oldDatabaseRef
+                      .set(SceneData)
+                      .then(function () {
+                        console.log("創建URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("創建URL節點失敗:", error);
+                      });
+                  }
+                });
+                PDatabaseRef.once("value").then(function (snapshot) {
+                  if (snapshot.exists()) {
+                    // 如果節點存在，使用 update 方法更新資料
+                    databaseRef
+                      .update(SceneData)
+                      .then(function () {
+                        console.log("更新URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("更新URL節點失敗:", error);
+                      });
+                  } else {
+                    // 如果節點不存在，使用 set 方法創建新的資料節點
+                    PDatabaseRef.set(SceneData)
+                      .then(function () {
+                        console.log("創建URL節點成功");
+                      })
+                      .catch(function (error) {
+                        console.log("創建URL節點失敗:", error);
+                      });
+                  }
+                });
+
+                updateLastScene();
+              });
+          }
+        );
+        }
+      }
+
+
+      var isClickedHotspot;
+
+      function addHotSpot(exploreCardName, callback) {
+        console.log("exploreCardName：" + exploreCardName);
+        checkIfUserIsStudent(
+          loginUserName,
+          function (isStudent, yourTeacherName) {
+            if (isStudent) {
+                   //var pitch = parseFloat(prompt("輸入 pitch:"));
+              //var yaw = parseFloat(prompt("輸入 yaw:"));
+              var text = prompt("輸入文字:");
+              // 獲取視窗中心的 pitch 和 yaw
+              var pitch = viewer.getPitch();
+              var yaw = viewer.getYaw();
+              var newHotSpot = {
+                pitch: pitch,
+                yaw: yaw,
+                type: "info",
+                text: text,
+              };
+
+              var currentSceneId = viewer.getScene();
+              console.log("currentSceneId：" + currentSceneId);
+              var hotSpotRef = firebase
+                .database()
+                .ref(
+                  yourTeacherName +
+                    "/360/" +
+                    AImgName +
+                    "/" +
+                    currentSceneId +
+                    "/explore/" +
+                    exploreCardName +
+                    "/answerStatus/" +
+                    loginUserName
+                );
+              hotSpotRef.set(newHotSpot, function (error) {
+                if (error) {
+                  console.log("儲存hotspot資料時發生錯誤:", error);
+                } else {
+                  console.log("Hotspot資料儲存成功！");
+
+                }
+              });
+              setTimeout(() => { // 假设这是一个异步操作
+                viewer.addHotSpot(newHotSpot);
+                callback(null, "Hotspot added successfully");
+
+              }, 1000);
+                       
+             
+                    
+            } else {
+              //var pitch = parseFloat(prompt("輸入 pitch:"));
+              //var yaw = parseFloat(prompt("輸入 yaw:"));
+              var text = prompt("輸入文字:");
+              // 獲取視窗中心的 pitch 和 yaw
+              var pitch = viewer.getPitch();
+              var yaw = viewer.getYaw();
+              var newHotSpot = {
+                pitch: pitch,
+                yaw: yaw,
+                type: "info",
+                text: text,
+                four: "",
+              };
+
+              var currentSceneId = viewer.getScene();
+              console.log("currentSceneId：" + currentSceneId);
+              var hotSpotRef = firebase
+                .database()
+                .ref(
+                  username +
+                    "/360/" +
+                    AImgName +
+                    "/" +
+                    currentSceneId +
+                    "/hotspots/" +
+                    text
+                );
+              hotSpotRef.set(newHotSpot, function (error) {
+                if (error) {
+                  console.log("儲存hotspot資料時發生錯誤:", error);
+                } else {
+                  console.log("Hotspot資料儲存成功！");
+                }
+              });
+
+              viewer.addHotSpot(newHotSpot);
+            }
+          }
+        );
+      }
+
+     //var tooltipElement = document.getElementById("tooltip");
+      var yawPitchElement = document.getElementById("yawPitch");
+
+      function showHotSpotDebug(event) {
+        // 檢查 viewer 是否已初始化
+        if (!viewer || typeof viewer.getConfig !== "function") {
+          console.error("viewer 未初始化或 getConfig 方法不存在");
+          return;
+        }
+
+        checkIfUserIsStudent(loginUserName, function (isStudent) {
+          if (isStudent) {
+            // 獲取 viewer 的配置
+            var viewerConfig = viewer.getConfig();
+
+            // 獲取視窗中心的 pitch 和 yaw
+            var pitch = viewer.getPitch();
+            var yaw = viewer.getYaw();
+
+            // 更新 tooltip 的內容
+             //tooltipElement.textContent = "Pitch: " + pitch.toFixed(2) + ", Yaw: " + yaw.toFixed(2);
+
+            // 更新 yawPitchElement 的內容
+            yawPitchElement.textContent =
+              "Current Pitch: " + pitch.toFixed(2) + ", Yaw: " + yaw.toFixed(2);
+
+            // 更新使用者位置至資料庫
+            updatePositionInDatabase({ yaw, pitch });
+            
+          } else {
+            // 獲取 viewer 的配置
+            var viewerConfig = viewer.getConfig();
+
+            // 獲取視窗中心的 pitch 和 yaw
+            var pitch = viewer.getPitch();
+            var yaw = viewer.getYaw();
+
+            // 更新 tooltip 的內容
+            // tooltipElement.textContent = "Pitch: " + pitch.toFixed(2) + ", Yaw: " + yaw.toFixed(2);
+
+            // 更新 yawPitchElement 的內容
+            yawPitchElement.textContent =
+              "Current Pitch: " + pitch.toFixed(2) + ", Yaw: " + yaw.toFixed(2);
+          }
+        });
+      }
+
+      function updatePositionInDatabase(position) {
+        var userPositionRef = firebase
+          .database()
+          .ref("userPosition/" + AroImgName + "/" + loginUserName);
+
+        // Set the user's position in the database
+        userPositionRef
+          .set(position)
+          .then(function () {
+            //console.log("Position updated successfully!");
+          })
+          .catch(function (error) {
+            console.error("Error updating position:", error);
+          });
+      }
+
+
+      function storeUserCilck(hotSpotName){
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0]; // 获取日期
+        const timeString = now.toTimeString().split(' ')[0]; // 获取时间
+        const dateTimeString = `${dateString} ${timeString}`;
+
+        var userClickRef = firebase.database().ref("userClick/" + AroImgName + "/" + loginUserName + "/" + dateTimeString);
+        userClickRef.set({
+          hotSpotName: hotSpotName,
+          time: dateTimeString
+        }).then(() => console.log("stuclick and time saved successfully!"))
+          .catch((error) => console.error("Error saving stuclick and time:", error));
+      }
+
+      function storeUserCilckButton(buttonName){
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0]; // 获取日期
+        const timeString = now.toTimeString().split(' ')[0]; // 获取时间
+        const dateTimeString = `${dateString} ${timeString}`;
+
+        var userClickRef = firebase.database().ref("userClick/" + AroImgName + "/" + loginUserName + "/" + dateTimeString);
+        userClickRef.set({
+          buttonName: buttonName,
+          time: dateTimeString
+        }).then(() => console.log("stuclick and time saved successfully!"))
+          .catch((error) => console.error("Error saving stuclick and time:", error));
+      }
+
+
+
+
+      let intervalId; // 用于存储 setInterval 的返回值，以便之后可以清除
+
+      function startRecordingPosition() {
+          const savePosition = () => {
+              const now = new Date();
+              const dateString = now.toISOString().split('T')[0]; // 获取日期
+              const timeString = now.toTimeString().split(' ')[0]; // 获取时间
+              const dateTimeString = `${dateString} ${timeString}`;
+
+              // 构建数据库路径
+              const userPositionRef = firebase.database().ref(`userPositionLog/${AroImgName}/${loginUserName}/${dateTimeString}`);
+
+               // 獲取視窗中心的 pitch 和 yaw
+            var pitch = viewer.getPitch();
+            var yaw = viewer.getYaw();
+
+              // 设置用户位置和时间到数据库
+              userPositionRef.set({ pitch: pitch, yaw: yaw, time: dateTimeString })
+                  .then(() => console.log("Position and time saved successfully!"))
+                  .catch((error) => console.error("Error saving position and time:", error));
+          };
+
+          // 每五秒保存一次位置信息
+          intervalId = setInterval(savePosition, 5000);
+                }
+                function stopRecordingPosition() {
+              if (intervalId) {
+                  clearInterval(intervalId);
+                  console.log("Position recording stopped.");
+              }
+          }
+
+          // 当页面准备卸载或刷新时，停止记录
+          window.addEventListener('beforeunload', stopRecordingPosition);
+
+
+      var deleteMode = false;
+
+      // 啟動刪除模式的函數
+      function startDeleteMode() {
+        deleteMode = true;
+        alert("刪除模式開啟，請點選你要刪除的標記");
+
+        // 添加點擊事件監聽器到熱點元素
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", handleHotSpotClick);
+        }
+      }
+
+      // 停止刪除模式的函數
+      function stopDeleteMode() {
+        deleteMode = false;
+
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", handleHotSpotClick);
+        }
+      }
+
+      // 處理點擊熱點事件
+      function handleHotSpotClick(event) {
+        if (deleteMode) {
+          var text = event.target.innerText;
+          hotSpotToDelete = text;
+          console.log("hotSpotToDelete：" + hotSpotToDelete);
+          deleteHotSpot(text);
+        }
+      }
+
+      // 刪除熱點
+      function deleteHotSpot(text) {
+        // 從 Firebase 資料庫刪除相應的熱點
+        // 檢查 AImgName 是否有值
+        //var AImgName = getQueryParam("AroundImgName");
+        var currentSceneId = viewer.getScene();
+        console.log("currentSceneId：" + currentSceneId);
+        var refPath =
+          username +
+          "/360/" +
+          AImgName +
+          "/" +
+          currentSceneId +
+          "/hotspots/" +
+          text;
+        console.log(refPath);
+        firebase
+          .database()
+          .ref(refPath)
+          .remove(function (error) {
+            if (error) {
+              console.log("Error deleting hotspot:", error);
+            } else {
+              console.log("Hotspot deleted successfully!");
+
+              // 在DOM中也刪除該熱點
+              var hotSpotElement = document.querySelector(
+                `[data-hotspot-id="${text}"]`
+              );
+              if (hotSpotElement) {
+                hotSpotElement.parentNode.removeChild(hotSpotElement);
+              }
+
+              // 顯示刪除成功的警示視窗
+              alert("刪除成功");
+              reloadImageWithHotspots();
+            }
+          });
+      }
+
+      function reloadImageWithHotspots() {
+        window.location.reload();
+      }
+
+      var multiMode = false;
+
+      // 啟動多選模式的函數
+      function startmultiMode() {
+        multiMode = true;
+        alert("多選模式開啟，請點選你要附加的標記");
+        // 添加點擊事件監聽器到熱點元素
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", toggleMultiChoiceForm);
+        }
+      }
+
+      // 停止多選模式的函數
+      function stopmultiMode() {
+        multiMode = false;
+        alert("標記點選完畢");
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener(
+            "click",
+            toggleMultiChoiceForm
+          );
+        }
+      }
+
+      function onHotspotClick(hotspotText, userName) {
+        checkUserRole(userName, (teacherName) => {
+          if (teacherName) {
+            // 用戶是學生，執行後續操作
+            const questionRef = database.ref(
+              `${teacherName}/360/AimgName/currentSceneId/hotspots/four`
+            );
+            questionRef.once("value", (snapshot) => {
+              if (snapshot.exists()) {
+                const questionData = snapshot.val();
+                displayQuestion(questionData, userName);
+              }
+            });
+          } else {
+            // 用戶不是學生，不執行操作或顯示提示
+            alert("這項功能只對學生開放。");
+          }
+        });
+      }
+      function toggleImageUploadSection() {
+        // 隱藏或顯示圖片上傳區域
+        var section = document.getElementById("imageUploadSection");
+        section.style.display =
+          section.style.display === "none" ? "block" : "none";
+        promptForTransferPoint();
+      }
+
+      var tYaw;
+      var tPitch;
+      var tText;
+
+      function promptForTransferPoint() {
+        tPitch = viewer.getPitch();
+        tYaw = viewer.getYaw();
+        tText = prompt("輸入傳送點的名稱:");
+        if (isNaN(tYaw) || isNaN(tPitch) || !tText) {
+          alert("傳送點資訊不完整，請重新輸入");
+          return;
+        }
+        // 保存傳送點基本信息到数据库
+        var tspotRef = database.ref(
+          username +
+            "/360/" +
+            AImgName +
+            "/" +
+            "scene_" +
+            lastSceneNum +
+            "/tspots/" +
+            tText
+        );
+
+        tspotRef
+          .set({
+            yaw: tYaw,
+            pitch: tPitch,
+            text: tText,
+            url: "", // 初始时未设置URL
+            fileName: "",
+            sceneId: "",
+          })
+          .then(function () {
+            console.log("傳送點基本資料已儲存到 Firebase");
+            alert("傳送點以儲存，請於下方上傳傳送目的地圖片");
+            // 显示图片上传部分
+            var uploadSection = document.getElementById("imageUploadSection");
+            uploadSection.style.display = "block";
+          })
+          .catch(function (error) {
+            console.error("儲存傳送點基本資料到 Firebase 失敗: ", error);
+          });
+      }
+
+      function handleImageUpload() {
+        var file = document.getElementById("imageUpload1").files[0];
+        if (!file) {
+          alert("請選擇一個文件上傳。");
+          return;
+        }
+
+        var storageRef = storage.ref("images/" + file.name);
+        var uploadTask = storageRef.put(file);
+
+        uploadTask.on(
+          "state_changed",
+          function (snapshot) {
+            // 上传进度监听
+            var progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+          },
+          function (error) {
+            // 上传失败处理
+            console.error("上傳失敗:", error);
+            alert("上傳失敗：" + error.message);
+          },
+          function () {
+            // 上传成功处理
+            uploadTask.snapshot.ref
+              .getDownloadURL()
+              .then(function (downloadURL) {
+                console.log("上傳的圖片 URL: " + downloadURL);
+                updateLastScene();
+                console.log("lastSceneNum：" + lastSceneNum);
+                lastSceneNum++; // 增加计数器
+                console.log("lastSceneNum：" + lastSceneNum);
+                var tfileName = file.name.split(".")[0];
+                console.log(
+                  "tYaw：" + tYaw,
+                  "tPitch：" + tPitch,
+                  "tText：" + tText,
+                  "downloadURL：" + downloadURL,
+                  "lastSceneNum：" + lastSceneNum,
+                  "fileName：" + tfileName
+                );
+                updateTransferPoint(
+                  tYaw,
+                  tPitch,
+                  tText,
+                  downloadURL,
+                  tfileName
+                );
+                // 更新图像名称变量
+                updateImageNameVariables(tfileName);
+              });
+
+            alert("圖片已成功上傳，點選傳送點，即可傳送");
+          }
+        );
+      }
+
+      function updateImageNameVariables(tfileName) {
+        console.log("tfileName：" + tfileName);
+        console.log(
+          "AoneImgName：" + AoneImgName,
+          "AtwoImgName：" + AtwoImgName,
+          "AthreeImgName" + AthreeImgName,
+          "AfourImgName：" + AfourImgName,
+          "AfiveImgName：" + AfiveImgName,
+          "AroImgName：" + AroImgName
+        );
+        if (!AoneImgName) {
+          AoneImgName = tfileName;
+        } else if (!AtwoImgName) {
+          AtwoImgName = tfileName;
+        } else if (!AthreeImgName) {
+          AthreeImgName = tfileName;
+        } else if (!AfourImgName) {
+          AfourImgName = tfileName;
+        } else if (!AfiveImgName) {
+          AfiveImgName = tfileName;
+        }
+        console.log(
+          "AoneImgName：" + AoneImgName,
+          "AtwoImgName：" + AtwoImgName,
+          "AthreeImgName" + AthreeImgName,
+          "AfourImgName：" + AfourImgName,
+          "AfiveImgName：" + AfiveImgName,
+          "AroImgName：" + AroImgName
+        );
+      }
+
+      function updateTransferPoint(yaw, pitch, text, url, fileName) {
+        updateLastScene();
+        // 更新数据库中的传送点信息
+        console.log(yaw, pitch, text, url, fileName);
+        var NlastSceneNum = lastSceneNum - 1;
+        console.log("NlastSceneNum：" + NlastSceneNum);
+        var OldScene = "scene_" + NlastSceneNum;
+        console.log("OldScene：" + OldScene);
+        var tspotRef = database.ref(
+          username + "/360/" + AImgName + "/" + OldScene + "/tspots/" + tText
+        );
+        var sceneId = "scene_" + lastSceneNum;
+        console.log("sceneId：" + sceneId);
+
+        tspotRef
+          .set({
+            yaw: yaw,
+            pitch: pitch,
+            text: text,
+            url: url,
+            fileName: fileName.split(".")[0],
+            sceneId: sceneId,
+          })
+          .then(function () {
+            console.log("tspotRef傳送點資料更新到 Firebase");
+            // 更新查看器显示新的全景图像
+            // 更新 Viewer
+            updateViewerWithNewImage(sceneId, url, pitch, yaw, text);
+          })
+          .catch(function (error) {
+            console.error("tspotRef更新傳送點資料到 Firebase 失敗: ", error);
+          });
+
+        var NewspotRef = database.ref(
+          username + "/360/" + AImgName + "/" + sceneId
+        );
+        NewspotRef.set({
+          URl: url,
+          fileName: fileName,
+        })
+          .then(function () {
+            console.log("NewspotRef傳送點資料更新到 Firebase");
+          })
+          .catch(function (error) {
+            console.error("NewspotRef更新傳送點資料到 Firebase 失敗: ", error);
+          });
+      }
+
+      function updateViewerWithNewImage(sceneId, imageUrl, pitch, yaw, text) {
+        // 确保 viewer 已初始化
+
+        if (!viewer || !viewer.getConfig() || !viewer.getConfig().scenes) {
+          console.error("Viewer 尚未初始化或场景配置不正确");
+          return;
+        }
+
+        // 检查场景是否已存在
+        if (viewer.getConfig().scenes.hasOwnProperty(sceneId)) {
+          console.error("场景 " + sceneId + " 已存在");
+          return;
+        }
+
+        // 新场景配置
+        var newScene = {
+          type: "equirectangular",
+          panorama: imageUrl,
+          hotSpots: [
+            {
+              pitch: pitch,
+              yaw: yaw,
+              type: "scene",
+              text: text,
+              sceneId: sceneId,
+            },
+          ],
+          hotSpotDebug: true,
+        };
+
+        // 尝试添加新场景
+        try {
+          viewer.addScene(sceneId, newScene);
+          //viewer.loadScene(sceneId);
+        } catch (error) {
+          console.error("添加新场景 " + sceneId + " 失败: ", error);
+        }
+        addTSpot(yaw, pitch, text, sceneId);
+        console.log("新增Tspot");
+      }
+
+      function removeAllHotSpots(sceneId) {
+        if (
+          !viewer ||
+          !viewer.getConfig() ||
+          !viewer.getConfig().scenes[sceneId]
+        ) {
+          console.error("Viewer 未初始化、配置不正确或指定场景不存在");
+          return;
+        }
+
+        var hotSpots = viewer.getConfig().scenes[sceneId].hotSpots;
+        if (hotSpots) {
+          hotSpots.forEach((hotSpot) => {
+            viewer.removeHotSpot(hotSpot.id, sceneId);
+          });
+        }
+      }
+
+      function addTSpot(yaw, pitch, text, sceneId) {
+        var tSpot = {
+          yaw: yaw,
+          pitch: pitch,
+          type: "scene",
+          text: text,
+          sceneId: sceneId,
+        };
+        console.log(tSpot);
+
+        // 假设 'currentScene' 是当前场景的 ID
+        var currentScene = viewer.getScene();
+        viewer.addHotSpot(tSpot, currentScene);
+      }
+
+      function addTSpotToViewer(tspot) {
+        var sceneId = viewer.getScene();
+        console.log("sceneId：" + sceneId);
+        var newHotSpot = {
+          pitch: tspot.pitch,
+          yaw: tspot.yaw,
+          type: "scene",
+          text: tspot.text,
+          sceneId: tspot.sceneId,
+        };
+        viewer.addHotSpot(newHotSpot, sceneId);
+      }
+
+      function hideAllButtons() {
+            // 直接通过ID选择并隐藏指定的元素
+        const elementsToHide = ['buttonContainer'];
+        
+        elementsToHide.forEach(function(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+      }
+
+      // function showAllButtons() {
+      //   // 顯示所有按鈕
+      //   console.log("正在顯示所有按鈕");
+      //   document.querySelectorAll("button").forEach(function (button) {
+      //     button.style.display = "block";
+      //   });
+      // }
+
+      function getQueryParam(param) {
+        const queryParams = new URLSearchParams(window.location.search);
+        return queryParams.get(param);
+      }
+
+      function loadImageAndInitViewer(imageName, username) {
+        var imageRef = database.ref(
+          username + "/360/" + imageName + "/scene_1/" + "/URL/"
+        );
+        imageRef
+          .once("value")
+          .then(function (snapshot) {
+            var imageUrl = snapshot.val();
+            if (imageUrl) {
+              initialImageUrl = imageUrl; // 保存初始圖片 URL
+              console.log(
+                "找到上頁傳過來圖片 " + imageName + " 的 URL: " + imageUrl
+              );
+              updateTour(); // 更新導覽，包括初始圖片和其他圖片
+            } else {
+              console.log("找不到图片 URL");
+            }
+          })
+          .catch(function (error) {
+            console.log("读取图片 URL 失败:", error);
+          });
+      }
+
+      var multiHotspotName;
+      function toggleMultiChoiceForm() {
+        var form = document.getElementById("multiChoiceForm");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+        var hotSpotElement = event.target;
+        var hotSpotText =
+          hotSpotElement.textContent || hotSpotElement.innerText;
+
+        // 顯示被點擊的熱點的文字
+        alert("你點選了熱點：" + hotSpotText);
+        multiHotspotName = hotSpotText;
+        // 移除所有熱點元素的點擊事件監聽器
+        stopmultiMode();
+      }
+
+      function submitMultiChoice(AroImgName) {
+        var currentSceneId = viewer.getScene();
+        console.log("currentSceneId：" + currentSceneId);
+
+        var question = document.getElementById("question").value;
+        var optionA = document.getElementById("optionA").value;
+        var optionB = document.getElementById("optionB").value;
+        var optionC = document.getElementById("optionC").value;
+        var optionD = document.getElementById("optionD").value;
+        var correctAnswer = "";
+
+        // 檢查哪個答案被選中
+        if (document.getElementById("answerA").checked) correctAnswer = "A";
+        if (document.getElementById("answerB").checked) correctAnswer = "B";
+        if (document.getElementById("answerC").checked) correctAnswer = "C";
+        if (document.getElementById("answerD").checked) correctAnswer = "D";
+
+        var isHintScene = document.getElementById("isHintScene").checked;
+        var HintSceneName;
+        if (isHintScene) {
+          HintSceneName = currentSceneId;
+        } else {
+          HintSceneName = "null";
+        }
+
+        console.log("HintSceneName：" + HintSceneName);
+
+        var newQuestion = {
+          questionName: question,
+          options: {
+            A: optionA,
+            B: optionB,
+            C: optionC,
+            D: optionD,
+          },
+          correctAnswer: correctAnswer,
+          isHintScene: HintSceneName,
+        };
+
+        // 上傳到 Firebase
+        var questionRef = firebase
+          .database()
+          .ref(
+            username +
+              "/360/" +
+              AImgName +
+              "/" +
+              currentSceneId +
+              "/hotspots/" +
+              multiHotspotName +
+              "/four/" +
+              question
+          );
+        questionRef
+          .set(newQuestion)
+          .then(function () {
+            console.log("多選題已儲存");
+            // 清空表單並隱藏
+            document.getElementById("question").value = "";
+            document.getElementById("optionA").value = "";
+            document.getElementById("optionB").value = "";
+            document.getElementById("optionC").value = "";
+            document.getElementById("optionD").value = "";
+            document.getElementById("multiChoiceForm").style.display = "none";
+          })
+          .catch(function (error) {
+            console.error("儲存多選題出錯: ", error);
+          });
+      }
+
+      // 全域變數以儲存上傳的圖片 URL
+      var uploadedImageUrls = [];
+
+      function updateTour() {
+        var scenes = {}; // 存储场景配置的对象
+
+        var baseRef = database.ref(username + "/360/" + AImgName);
+
+        baseRef.once("value").then(function (snapshot) {
+          var data = snapshot.val();
+          console.log("Database Data:", data); // 输出整个数据对象以检查
+
+          if (data) {
+            // 设置初始场景
+            var initialSceneId = "scene_1";
+            scenes[initialSceneId] = {
+              type: "equirectangular",
+              panorama: data.scene_1.URL,
+              hotSpots: [],
+              hotSpotDebug: true,
+            };
+            console.log("data object:", data);
+
+            // 循环添加其他场景的配置
+            Object.keys(data).forEach(function (sceneKey) {
+              if (sceneKey !== "scene_1") {
+                console.log("sceneKey：" + sceneKey);
+                console.log(data[sceneKey].URl);
+                scenes[sceneKey] = {
+                  type: "equirectangular",
+                  panorama: data[sceneKey].URl,
+                  hotSpots: [], // 根据需要设置热点信息
+                  hotSpotDebug: true,
+                };
+              }
+            });
+
+            initOrUpdateViewer(scenes, initialSceneId);
+            console.log(scenes);
+          }
+        });
+      }
+
+      function initOrUpdateViewer(scenes, initialSceneId) {
+        console.log(
+          "Initializing or updating Pannellum viewer with scenes:",
+          scenes
+        );
+        if (viewer) {
+          viewer.updateConfig({ scenes: scenes });
+
+          console.log("initialSceneId：" + initialSceneId);
+          viewer.loadScene(initialSceneId);
+        } else {
+          console.log("else");
+          viewer = pannellum.viewer("panorama", {
+            default: {
+              firstScene: initialSceneId,
+              author: "Pannellum",
+              sceneFadeDuration: 1000,
+            },
+            scenes: scenes,
+          });
+
+          // 添加每个场景的热点和事件
+          Object.keys(scenes).forEach(function (sceneId) {
+            viewer.addScene(sceneId, scenes[sceneId]);
+          });
+
+          console.log("initialSceneId：" + initialSceneId);
+          viewer.on("scenechange", function () {
+            var newSceneId = viewer.getScene();
+            console.log("Scene changed to:", newSceneId);
+            removeAllHotSpots(newSceneId); // 清除新场景的热点
+            loadAllHotspots(); // 为新场景加载热点和传送点
+            addHotspotClickListener();
+          });
+
+          // 定期检查 viewer 是否已加载完成
+          var checkViewerLoaded = setInterval(function () {
+            if (viewer.isLoaded()) {
+              clearInterval(checkViewerLoaded); // 停止定期检查
+              loadAllHotspots();
+
+              // 添加热点点击事件监听器
+              addHotspotClickListener();
+            }
+          }, 500);
+        }
+      }
+
+      // 添加热点点击事件监听器的函数
+      function addHotspotClickListener() {
+        // 等待500毫秒後添加热点的點擊事件監聽器
+        setTimeout(function () {
+          var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+          console.log("Hotspot elements count:", hotSpotElements.length);
+
+          for (var i = 0; i < hotSpotElements.length; i++) {
+            addClickListenerToHotspot(hotSpotElements[i]);
+          }
+          console.log("熱點監聽器已添加");
+        }, 500);
+      }
+
+      // 添加點擊事件監聽器到單個熱點元素
+      function addClickListenerToHotspot(hotSpotElement) {
+        hotSpotElement.addEventListener("click", function (event) {
+          console.log("Hotspot clicked!");
+
+          var hotSpotText =
+            hotSpotElement.textContent || hotSpotElement.innerText;
+          // 顯示被點擊的熱點的文字
+          console.log("hotSpotText：" + hotSpotText);
+          
+          isClickedHotspot = hotSpotText;
+          console.log(isClickedHotspot);
+          showFloatingBox(event, isClickedHotspot); // 嘗試手動呼叫 showFloatingBox，確保它可以正確執行
+          storeUserCilck(isClickedHotspot);
+        });
+      }
+
+      function updateAroImgName(sceneId) {
+        switch (sceneId) {
+          case "scene_1":
+            AroImgName = AoneImgName;
+            break;
+          case "scene_2":
+            AroImgName = AtwoImgName;
+            break;
+          case "scene_3":
+            AroImgName = AthreeImgName;
+            break;
+          case "scene_4":
+            AroImgName = AfourImgName;
+            break;
+          case "scene_5":
+            AroImgName = AfiveImgName;
+            break;
+          default:
+            AroImgName = null; // 或其他默认处理
+        }
+        console.log("AroImgName updated to:", AroImgName);
+      }
+
+      function loadAllHotspots() {
+        var currentSceneId = viewer.getScene();
+        console.log("currentSceneId：" + currentSceneId);
+        removeAllHotSpots(currentSceneId);
+        // 加载热点
+        var hotSpotRef = database.ref(
+          username + "/360/" + AImgName + "/" + currentSceneId + "/hotspots/"
+        );
+        hotSpotRef
+          .once("value", function (snapshot) {
+            var hotSpots = snapshot.val();
+            if (hotSpots) {
+              Object.values(hotSpots).forEach((hotSpot) => {
+                viewer.addHotSpot(hotSpot, currentSceneId);
+              });
+            }
+          })
+          .catch(function (error) {
+            console.error("读取热点时出错：", error);
+          });
+
+        // 加载传送点
+        var tspotRef = database.ref(
+          username + "/360/" + AImgName + "/" + currentSceneId + "/tspots/"
+        );
+        tspotRef
+          .once("value", function (snapshot) {
+            var tspots = snapshot.val();
+            console.log("tspots：", tspots);
+            updateLastScene();
+            console.log("lastSceneNum：" + lastSceneNum);
+            if (tspots) {
+              //removeAllHotSpots(currentSceneId);
+              Object.values(tspots).forEach((tspot) => {
+                addTSpotToViewer(tspot, currentSceneId);
+                console.log("新增Tspot");
+              });
+            } else if (
+              currentSceneId === "scene_" + lastSceneNum &&
+              currentSceneId !== "scene_1"
+            ) {
+              console.log("lastSceneNum" + lastSceneNum);
+              console.log("当前为最后场景");
+              removeAllHotSpots(currentSceneId);
+              var returnHotSpot = {
+                pitch: 0,
+                yaw: 0,
+                type: "scene",
+                text: "回到初始场景",
+                sceneId: "scene_1",
+              };
+              viewer.addHotSpot(returnHotSpot, currentSceneId);
+              console.log("新增回到初始場景傳送點");
+            }
+          })
+          .catch(function (error) {
+            console.error("读取传送点时出错：", error);
+          });
+      }
+
+      var lastSceneNum = 1;
+
+      function updateLastScene() {
+        console.log("觸發updateLastScene");
+        var sceneRef = database.ref(username + "/360/" + AImgName); // Assuming AoneImgName is your first scene name
+
+        sceneRef
+          .once("value", function (snapshot) {
+            var data = snapshot.val();
+            if (data) {
+              // Assuming scene names are like "scene_1", "scene_2", etc.
+              Object.keys(data).forEach(function (key) {
+                if (key.startsWith("scene_")) {
+                  var currentSceneNumber = parseInt(key.split("_")[1]);
+                  console.log("currentSceneNumber：" + currentSceneNumber);
+                  lastSceneNum = currentSceneNumber;
+                }
+              });
+              console.log("Last scene number updated to:", lastSceneNum);
+            } else {
+              console.log("No scene data found.");
+            }
+          })
+          .catch(function (error) {
+            console.log("Error fetching scene data:", error);
+          });
+      }
+
+      function handleMultiChoiceClick(
+        username,
+        yourTeacherName,
+        isClickedHotspot
+      ) {
+        console.log("多選按鈕被點擊");
+        console.log(username, yourTeacherName);
+        storeUserCilckButton("多選按鈕");
+        loadMultiChoiceQuestions(username, yourTeacherName, isClickedHotspot);
+      }
+
+      function loadMultiChoiceQuestions(
+        userName,
+        teacherName,
+        isClickedHotspot
+      ) {
+        var currentSceneId = viewer.getScene();
+        var questionRef = database.ref(
+          teacherName +
+            "/360/" +
+            AImgName +
+            "/" +
+            currentSceneId +
+            "/hotspots/" +
+            isClickedHotspot +
+            "/four/"
+        );
+
+        console.log(
+          teacherName +
+            "/360/" +
+            AImgName +
+            "/" +
+            currentSceneId +
+            "/hotspots/" +
+            isClickedHotspot +
+            "/four/"
+        );
+
+        questionRef
+          .once("value")
+          .then((snapshot) => {
+            const questionsData = snapshot.val();
+            if (questionsData) {
+              Object.keys(questionsData).forEach((questionKey) => {
+                const questionData = questionsData[questionKey];
+                if (questionData.options && questionData.correctAnswer) {
+                  displayQuestion(questionData, userName);
+                } else {
+                  console.log("問題數據結構不正確");
+                }
+              });
+            }else{
+              alert("這裡沒有題目喔！")
+            }
+          })
+          .catch((error) => {
+            console.error("讀取題目時發生錯誤:", error);
+          });
+      }
+
+      function displayQuestion(questionData, userName) {
+    const questionContainer = document.getElementById("questionDisplay");
+    questionContainer.innerHTML = ''; // 清空之前的内容
+    questionContainer.style.display = "block"; // 确保容器是可见的
+    questionContainer.style.backgroundColor = "#f8f9fa"
+
+    const form = document.createElement("form");
+    form.className = "needs-validation"; // 添加Bootstrap验证类
+    form.noValidate = true; // 禁用HTML5默认验证
+
+    // 添加问题文本
+    const questionText = document.createElement("h5"); // 使用更合适的标题标签
+    questionText.textContent = questionData.questionName;
+    questionText.className = "mb-3"; // 添加Bootstrap的margin bottom类
+    form.appendChild(questionText);
+
+    // 添加选项按钮
+    Object.keys(questionData.options).forEach((optionKey) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "form-check"; // 添加Bootstrap的form-check类
+
+        const radioButton = document.createElement("input");
+        radioButton.type = "radio";
+        radioButton.name = "option";
+        radioButton.value = optionKey;
+        radioButton.className = "form-check-input"; // 添加Bootstrap的form-check-input类
+        radioButton.id = `option-${optionKey}`; // 设置唯一ID
+
+        const label = document.createElement("label");
+        label.className = "form-check-label"; // 添加Bootstrap的form-check-label类
+        label.setAttribute("for", `option-${optionKey}`);
+        label.appendChild(document.createTextNode(questionData.options[optionKey]));
+
+        optionDiv.appendChild(radioButton);
+        optionDiv.appendChild(label);
+        form.appendChild(optionDiv); // 直接将选项和标签添加到form中
+    });
+
+    const submitButton = document.createElement("button"); // 使用button而不是input来更好地应用Bootstrap样式
+    submitButton.type = "button";
+    submitButton.className = "btn btn-success mt-3"; // 添加Bootstrap按钮类和margin top类
+    submitButton.textContent = "提交答案";
+    submitButton.addEventListener("click", () => {
+        const selectedOption = form.querySelector('input[name="option"]:checked').value;
+        submitAnswer(questionData, selectedOption, userName); // 确保submitAnswer函数能接收userName参数
+    });
+    form.appendChild(submitButton);
+
+    // 将表单添加到容器中
+    questionContainer.appendChild(form);
+}
+
+
+      function submitAnswer(questionData, selectedOption) {
+        // 比較用戶選擇的答案與正確答案
+        const isCorrect = selectedOption === questionData.correctAnswer;
+
+        var currentSceneId = viewer.getScene();
+        console.log("loginUserName：" + loginUserName);
+        // 更新資料庫：記錄答案狀態
+        const answerPath =
+          username +
+          "/360/" +
+          AImgName +
+          "/" +
+          currentSceneId +
+          "/hotspots/" +
+          isClickedHotspot +
+          "/four/" +
+          questionData.questionName;
+
+        // 使用 update 方法
+        const answerStatusObject = {};
+
+        if (isCorrect) {
+          // 如果答對，將使用者的選擇記錄在 correct 底下
+          answerStatusObject.correct = {};
+          answerStatusObject.correct[loginUserName] = selectedOption;
+        } else {
+          // 如果答錯，將使用者的選擇記錄在 incorrect 底下
+          answerStatusObject.incorrect = {};
+          answerStatusObject.incorrect[loginUserName] = selectedOption;
+        }
+
+        // 使用 update 方法，並在更新前先初始化 answerStatus
+        database
+          .ref(answerPath)
+          .update(answerStatusObject)
+          .then(() => {
+            if (isCorrect) {
+              alert("恭喜，您答對了！");
+              // 這裡可以添加答對後的額外操作
+            } else {
+              alert(
+                "很遺憾，答錯了。正確答案是：" + questionData.correctAnswer
+              );
+              alert("點選確認前往提示場景");
+              viewer.loadScene(questionData.isHintScene);
+
+              const questionContainer = document.getElementById("questionDisplay");
+              questionContainer.innerHTML = ''; // 清空之前的内容
+              questionContainer.style.display = "none"; // 确保容器是可见的
+              var checkViewerLoaded = setInterval(function () {
+                  if (viewer.isLoaded()) {
+                    clearInterval(checkViewerLoaded); // 停止定期检查
+                    loadAllHotspots();
+                    // 添加热点点击事件监听器
+                    addHotspotClickListener();
+                  }
+                }, 500);
+                viewer.on("scenechange", function () {
+                  var newSceneId = viewer.getScene();
+                  console.log("Scene changed to:", newSceneId);
+                  removeAllHotSpots(newSceneId); // 清除新场景的热点
+                  loadAllHotspots(); // 为新场景加载热点和传送点
+                  addHotspotClickListener();
+                });
+              // 這裡可以添加答錯後的額外操作
+            }
+
+            // 隱藏作答區
+            hideAnswerArea();
+          })
+          .catch((error) => {
+            console.error("記錄答案時發生錯誤:", error);
+          });
+      }
+
+      function hideAnswerArea() {
+        // 這裡添加隱藏作答區的代碼
+        const answerForm = document.getElementById("questionForm");
+        if (answerForm) {
+          answerForm.style.display = "none";
+        }
+      }
+
+      function handleExploreClick() {
+        console.log("探索按鈕被點擊");
+        storeUserCilckButton("探索按鈕");
+        viewExploreCardDetails();
+        // 在這裡實現探索功能的邏輯
+      }
+
+      function handleLandmarkClick(isClickedHotspot) {
+        console.log("地標按鈕被點擊");
+        storeUserCilckButton("地標按鈕");
+        // 在這裡實現地標功能的邏輯
+        viewLocation(isClickedHotspot);
+      }
+
+      function handleAudioClick(isClickedHotspot) {
+        console.log("音訊按鈕被點擊");
+        storeUserCilckButton("音訊按鈕");
+        // 在這裡實現音訊播放的邏輯
+        fetchAndShowSoundEffect(isClickedHotspot);
+      }
+
+      function showFloatingBox(event, isClickedHotspot) {
+        console.log("showFloatingBox 被觸發了！");
+        const logRef = firebase.database().ref("/userDoingLog/" + AImgName + "/" + loginUserName);
+        event.stopPropagation();
+        checkIfUserIsStudent(loginUserName, function (isStudent) {
+          if (isStudent) {
+            var floatingBox = document.getElementById("floatingBox");
+            if (!floatingBox) {
+              floatingBox = document.createElement("div");
+              floatingBox.id = "floatingBox";
+              floatingBox.style.position = "absolute";
+              floatingBox.style.backgroundColor = "white";
+              floatingBox.style.padding = "10px";
+              floatingBox.style.border = "1px solid black";
+              floatingBox.style.zIndex = "1000";
+              document.body.appendChild(floatingBox);
+            }
+
+            floatingBox.style.left = event.clientX + "px";
+            floatingBox.style.top = event.clientY + "px";
+            floatingBox.style.display = "block";
+            floatingBox.innerHTML = "";
+
+            var multiChoiceBtn = document.createElement("button");
+            multiChoiceBtn.textContent = "多選";
+            multiChoiceBtn.className = "btn btn-primary me-2";
+            multiChoiceBtn.addEventListener("click", function () {
+              handleMultiChoiceClick(username, username, isClickedHotspot);
+            });
+
+            floatingBox.appendChild(multiChoiceBtn);
+
+            var exploreBtn = document.createElement("button");
+            exploreBtn.textContent = "探索";
+            exploreBtn.className = "btn btn-success me-2";
+            exploreBtn.addEventListener("click", handleExploreClick);
+            floatingBox.appendChild(exploreBtn);
+
+            var landmarkBtn = document.createElement("button");
+            landmarkBtn.textContent = "地標";
+            landmarkBtn.className = "btn btn-info me-2";
+            landmarkBtn.addEventListener("click", function () {
+              handleLandmarkClick(isClickedHotspot);
+            });
+            floatingBox.appendChild(landmarkBtn);
+
+            var audioBtn = document.createElement("button");
+            audioBtn.textContent = "音訊";
+            audioBtn.className = "btn btn-warning";
+            audioBtn.addEventListener("click", function () {
+              handleAudioClick(isClickedHotspot);
+            });
+            floatingBox.appendChild(audioBtn);
+          } else {
+            console.log("你是老師");
+          }
+        });
+      }
+
+      function viewMultiChoiceQuestions() {
+        // 清空現有題目顯示區域
+        const questionDisplay = document.getElementById("questionDisplay");
+        questionDisplay.style.display = "block";
+        const questionContainer = document.getElementById("questionDisplay");
+        questionContainer.innerHTML = "";
+        var currentSceneId = viewer.getScene();
+
+        // 獲取多選題資料的路徑，這裡的路徑需要根據實際情況修改
+        const multiChoicePath =
+          username + "/360/" + AImgName + "/" + currentSceneId + "/hotspots/";
+
+        // 假設您的資料庫結構是熱點名稱/四選一/多選題題目/多選題內容
+        database.ref(multiChoicePath).once(
+          "value",
+          (snapshot) => {
+            const hotspotsData = snapshot.val();
+            if (hotspotsData) {
+              Object.keys(hotspotsData).forEach((hotspotName) => {
+                const hotspotData = hotspotsData[hotspotName];
+
+                // 檢查 four 節點是否存在
+                if (hotspotData.four) {
+                  Object.keys(hotspotData.four).forEach((questionKey) => {
+                    const questionData = hotspotData.four[questionKey];
+
+                    // 顯示多選題
+                    displayMultiChoiceQuestion(hotspotName, questionData);
+                  });
+                }
+              });
+            }
+          },
+          (error) => {
+            console.error("讀取多選題時發生錯誤:", error);
+          }
+        );
+      }
+
+      function displayMultiChoiceQuestion(hotspotName, questionData) {
+        console.log("觸發 displayMultiChoiceQuestion");
+        // 創建新的 div 元素
+        var currentSceneId = viewer.getScene();
+        const container = document.createElement("div");
+        container.className = "col-md-8";
+        // 顯示熱點名稱
+        const hotspotLabel = document.createElement("label");
+        hotspotLabel.textContent = "熱點名稱: " + hotspotName;
+        container.appendChild(hotspotLabel);
+
+        // 顯示多選題題目
+        const questionLabel = document.createElement("label");
+        questionLabel.textContent = "多選題題目: " + questionData.questionName;
+        container.appendChild(questionLabel);
+
+        // 顯示多選題內容
+        const contentLabel = document.createElement("label");
+        contentLabel.textContent =
+          "多選題內容: " + JSON.stringify(questionData.options);
+        container.appendChild(contentLabel);
+
+        // 顯示正確答案
+        const correctAnswerLabel = document.createElement("label");
+        correctAnswerLabel.textContent =
+          "正確答案: " + questionData.correctAnswer;
+        container.appendChild(correctAnswerLabel);
+
+        // 顯示是否為提示場景
+        const isHintSceneLabel = document.createElement("label");
+        isHintSceneLabel.textContent =
+          "提示場景為: " + questionData.isHintScene;
+        container.appendChild(isHintSceneLabel);
+
+        // 添加編輯按鈕
+        const editButton = document.createElement("button");
+        editButton.textContent = "編輯";
+        editButton.className = "btn btn-success"; 
+        editButton.addEventListener("click", () => {
+          // 隱藏編輯按鈕
+          editButton.style.display = "none";
+
+          // 創建可編輯的輸入框
+          const questionInput = createEditableInput(questionData.questionName);
+          const contentInput = createEditableInput(
+            JSON.stringify(questionData.options)
+          );
+          const correctAnswerInput = createEditableInput(
+            questionData.correctAnswer
+          );
+
+          // 顯示儲存按鈕
+          const saveButton = document.createElement("button");
+          saveButton.textContent = "儲存";
+          saveButton.className = "btn btn-primary";
+          saveButton.addEventListener("click", () => {
+            // 更新資料庫的邏輯
+            const updatedQuestionData = {
+              questionName: questionInput.value,
+              options: JSON.parse(contentInput.value),
+              correctAnswer: correctAnswerInput.value,
+              isHintScene: questionData.isHintScene,
+            };
+            console.log("questionInput.value：" + questionInput.value);
+
+            // 使用相應的資料庫 API 更新資料
+            const databasePath =
+              username +
+              "/360/" +
+              AImgName +
+              "/" +
+              currentSceneId +
+              "/hotspots/" +
+              hotspotName +
+              "/four/" +
+              questionData.questionName;
+            deleteFromDatabase(databasePath);
+            const updatabasePath =
+              username +
+              "/360/" +
+              AImgName +
+              "/" +
+              currentSceneId +
+              "/hotspots/" +
+              hotspotName +
+              "/four/" +
+              questionInput.value;
+            updateDatabase(updatabasePath, updatedQuestionData);
+
+            // 顯示編輯按鈕並隱藏儲存按鈕
+            editButton.style.display = "inline";
+            saveButton.style.display = "none";
+
+            // 替換輸入框為文本元素
+            replaceInputWithText(
+              questionLabel,
+              "多選題題目: " + updatedQuestionData.questionName
+            );
+            replaceInputWithText(
+              contentLabel,
+              "多選題內容: " + JSON.stringify(updatedQuestionData.options)
+            );
+            replaceInputWithText(
+              correctAnswerLabel,
+              "正確答案: " + updatedQuestionData.correctAnswer
+            );
+
+            // 隱藏可編輯的輸入框
+            hideElement(questionInput);
+            hideElement(contentInput);
+            hideElement(correctAnswerInput);
+          });
+
+          // 顯示儲存按鈕
+          container.appendChild(saveButton);
+
+          // 將可編輯的輸入框添加到 div 中
+          container.appendChild(questionInput);
+          container.appendChild(contentInput);
+          container.appendChild(correctAnswerInput);
+        });
+        container.appendChild(editButton);
+
+        // 添加刪除按鈕
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "刪除";
+        deleteButton.className = "btn btn-danger"; 
+        deleteButton.addEventListener("click", () => {
+          // 刪除資料庫的邏輯
+          const databasePath =
+            username +
+            "/360/" +
+            AImgName +
+            "/" +
+            currentSceneId +
+            "/hotspots/" +
+            hotspotName +
+            "/four/" +
+            questionData.questionName;
+          deleteFromDatabase(databasePath);
+
+          // 從父容器中移除整個 div
+          container.parentNode.removeChild(container);
+        });
+        container.appendChild(deleteButton);
+
+        // 添加到容器中
+        const questionContainer = document.getElementById("questionDisplay");
+        questionContainer.appendChild(container);
+      }
+
+      function createEditableInput(value) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = value;
+        return input;
+      }
+
+      function replaceInputWithText(label, newText) {
+        console.log("進入 replaceInputWithText 函數");
+        const textNode = document.createTextNode(newText);
+        console.log("label 內容清空前：", label.textContent);
+        label.textContent = ""; // 清空 label 內容
+        console.log("label 內容清空後：", label.textContent);
+        label.appendChild(textNode); // 將新的文本節點添加到 label 中
+      }
+
+      function updateDatabase(path, data) {
+        return new Promise((resolve, reject) => {
+          database
+            .ref(path)
+            .set(data)
+            .then(() => {
+              console.log("資料庫更新成功");
+              resolve(); // 成功時解決 Promise
+            })
+            .catch((error) => {
+              console.error("資料庫更新失敗", error);
+              reject(error); // 失敗時拒絕 Promise
+            });
+        });
+      }
+
+      // 資料庫刪除邏輯，使用 Firebase Realtime Database API
+      function deleteFromDatabase(path) {
+        const databaseRef = firebase.database().ref(path);
+        return databaseRef
+          .remove()
+          .then(() => {
+            console.log("資料庫刪除成功", path);
+          })
+          .catch((error) => {
+            console.error("資料庫刪除失敗", path, error);
+          });
+      }
+
+      // 隱藏元素
+      function hideElement(element) {
+        element.style.display = "none";
+      }
+
+      let currentEditedCardName; // 新的卡片名稱存儲變數
+      let exploreMode = false;
+
+      // 新增探索卡片的函數
+      function addExploreCard() {
+        exploreMode = true;
+        alert("點選模式開啟，請點選你要的標記");
+
+        // 添加點擊事件監聽器到熱點元素
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", handleExplore);
+        }
+      }
+
+      function handleExplore(event) {
+        if (exploreMode) {
+          var text = event.target.innerText;
+          hotSpotToExplore = text;
+          console.log("hotSpotToExplore：" + hotSpotToExplore);
+          stopExploreMode();
+          handleExploreCardCreation(hotSpotToExplore);
+        }
+      }
+
+      function handleExploreCardCreation(hotSpotToExplore) {
+        var currentSceneId = viewer.getScene();
+        // 初始化 Firebase Storage
+        const storage = firebase.storage();
+        const storageRef = storage.ref();
+        const cardNameInput = prompt("請輸入提示卡片名稱:");
+        if (cardNameInput === null) {
+          alert("尚未輸入提示卡片名稱");
+          return;
+        }
+        currentEditedCardName = cardNameInput;
+
+        // 創建一個上傳按鈕
+        const uploadButton = document.createElement("button");
+        uploadButton.textContent = "上傳圖片";
+        document.body.appendChild(uploadButton); // 可以選擇將按鈕添加到某個特定的元素中
+
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.style.display = "none"; // 隱藏文件輸入
+
+        // 添加文件選擇事件
+        fileInput.addEventListener("change", async (event) => {
+          console.log("文件選擇事件觸發");
+          const selectedFile = event.target.files[0];
+
+          if (selectedFile) {
+            // 上傳圖片至 Firebase Storage
+            const imageRef = storageRef.child(
+              `${username}/images/${selectedFile.name}`
+            );
+            await imageRef.put(selectedFile);
+
+            // 取得上傳後的圖片 URL
+            const imageUrl = await imageRef.getDownloadURL();
+
+            // 將探索卡片資料儲存到資料庫
+            const databasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/${cardNameInput}`;
+            const exploreData = {
+              cardName: cardNameInput,
+              cardImage: imageUrl,
+              hotspotToExplore: hotSpotToExplore,
+            };
+            updateDatabase(databasePath, exploreData);
+
+            // 創建並顯示探索卡片
+            createExploreCard(cardNameInput, imageUrl, hotSpotToExplore);
+
+            // 上傳完成後隱藏上傳按鈕
+            uploadButton.style.display = "none";
+          }
+        });
+
+        document.body.appendChild(fileInput); // 將文件輸入元素添加到頁面上
+
+        // 當按鈕被點擊時觸發文件輸入
+        uploadButton.addEventListener("click", function () {
+          fileInput.click();
+        });
+      }
+
+      function createExploreCard(cardNameInput, imageUrl, hotSpotToExplore) {
+        const exploreCardContainer = document.getElementById(
+          "exploreCardContainer"
+        );
+        if (exploreCardContainer) {
+          const exploreCardElement = document.createElement("div");
+          exploreCardElement.classList.add("card");
+          exploreCardElement.dataset.cardName = cardNameInput; // 添加 data-card-name 屬性
+          exploreCardElement.innerHTML = `
+            <div class="card" data-card-name="${cardNameInput}">
+                <img src="${imageUrl}" class="card-img-top" alt="${cardNameInput}">
+                <div class="card-body">
+                    <h5 class="card-title" data-card-name="${cardNameInput}">卡牌名稱：${cardNameInput}</h5>
+                    <h5 class="card-title" data-card-name="${hotSpotToExplore}">熱點：${hotSpotToExplore}</h5>
+                    <button class="btn btn-primary" onclick="editExploreCard('${cardNameInput}', '${imageUrl}')">編輯</button>
+                    <button class="btn btn-danger" onclick="deleteExploreCard('${cardNameInput}')">刪除</button>
+                </div>
+            </div>
+            <hr>
+        `;
+
+          // 將探索卡片加入到指定區域
+          exploreCardContainer.appendChild(exploreCardElement);
+        }
+      }
+
+      // 停止探索模式的函數
+      function stopExploreMode() {
+        exploreMode = false;
+
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", handleExplore);
+        }
+      }
+
+      // 編輯探索卡片
+      function editExploreCard(cardName, imgURL) {
+        console.log("編輯探索卡片事件觸發");
+        var currentSceneId = viewer.getScene();
+        console.log("cardName：" + cardName);
+
+        const newCardName = prompt("請輸入新的提示卡片名稱:", cardName);
+        console.log("新卡片名稱：" + newCardName);
+        currentEditedCardName = newCardName;
+        if (newCardName !== null) {
+          if (newCardName !== cardName) {
+            // 查找要編輯的卡片元素
+            const exploreCardContainer = document.getElementById(
+              "exploreCardContainer"
+            );
+            const exploreCardElement = exploreCardContainer.querySelector(
+              `[data-card-name="${cardName}"]`
+            );
+            currentEditedCardName = newCardName;
+
+            if (exploreCardElement) {
+              console.log("進來了");
+              // 更新卡片的顯示名稱
+              const cardTitle = exploreCardElement.querySelector(".card-title");
+              if (cardTitle) {
+                replaceInputWithText(cardTitle, newCardName);
+              } else {
+                console.error("找不到 .card-title 元素");
+              }
+
+              // 更新資料庫中的卡片名稱
+              const OdatabasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/${cardName}`;
+              console.log("OdatabasePath：" + OdatabasePath);
+
+              // 刪除資料庫中的原卡片節點
+              deleteFromDatabase(OdatabasePath)
+                .then(() => {
+                  // 創建新的資料庫節點
+                  const NdatabasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/${newCardName}`;
+                  const exploreData = {
+                    cardName: newCardName,
+                    cardImage: imgURL,
+                    // 其他需要的資料
+                  };
+
+                  return updateDatabase(NdatabasePath, exploreData);
+                })
+                .catch((error) => {
+                  console.error("資料庫操作失敗", error);
+                });
+            }
+          } else {
+            console.log("新卡片名稱與原卡片名稱相同，不執行編輯操作。");
+          }
+        } else {
+          console.log("使用者取消輸入，不執行編輯操作。");
+        }
+        viewExploreCardDetails();
+      }
+
+      // 刪除探索卡片
+      function deleteExploreCard(CardName) {
+        var currentSceneId = viewer.getScene();
+        const databasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/${CardName}`;
+
+        const exploreCardContainer = document.getElementById(
+          "exploreCardContainer"
+        );
+
+        if (exploreCardContainer) {
+          const exploreCardElement = exploreCardContainer.querySelector(
+            `[data-card-name="${CardName}"]`
+          );
+          console.log("exploreCardElement:", exploreCardElement);
+
+          if (exploreCardElement) {
+            const confirmation = confirm(
+              `確定要刪除提示卡片 "${CardName}" 嗎？`
+            );
+            if (confirmation) {
+              // 刪除資料庫中的節點
+              deleteFromDatabase(databasePath)
+                .then(() => {
+                  // 從 UI 中移除探索卡片
+                  exploreCardElement.remove();
+                })
+                .catch((error) => {
+                  console.error("資料庫操作失敗", error);
+                });
+            }
+          } else {
+            console.error("找不到 exploreCardElement");
+          }
+        } else {
+          console.error("exploreCardContainer 不存在");
+        }
+      }
+      function checkUserAnswerStatus(databasePath, cardName) {
+    // 构建指向特定 answerStatus 节点的引用
+    const answerStatusRef = firebase.database().ref(`${databasePath}${cardName}/answerStatus/${loginUserName}`);
+    
+    return new Promise((resolve, reject) => {
+        // 查询指定路径下是否存在数据
+        answerStatusRef.once('value', snapshot => {
+            if (snapshot.exists()) {
+                // 如果存在，表示用户已回答
+                resolve(true);
+            } else {
+                // 不存在，表示用户未回答
+                resolve(false);
+            }
+        }, error => {
+            // 查询过程中出错
+            reject(error);
+        });
+    });
+}
+
+      // 查看探索卡片詳細資訊的函數
+      function viewExploreCardDetails() {
+        console.log("進來viewExploreCardDetails");
+        var currentSceneId = viewer.getScene();
+        checkIfUserIsStudent(loginUserName, function (isStudent) {
+          if (isStudent) {
+        const databasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/`;
+        const exploreCardContainer = document.getElementById("exploreCardContainerStu");
+
+        if (exploreCardContainer) {
+            exploreCardContainer.innerHTML = ""; // 清空之前的详细信息
+            exploreCardContainer.style.position = "fixed";
+            exploreCardContainer.style.right = "20px";
+            exploreCardContainer.style.top = "20px";
+            exploreCardContainer.style.maxWidth = "300px";
+            exploreCardContainer.style.zIndex = "1000";
+            exploreCardContainer.className = "overflow-auto";
+
+            fetchExploreCardsFromDatabase(databasePath)
+            .then((exploreCards) => {
+            exploreCards.forEach((card) => {
+              checkUserAnswerStatus(databasePath, card.cardName)
+                .then((userAnswered) => {
+                    if (!userAnswered) {
+                const cardElement = document.createElement("div");
+                cardElement.className = "card mb-3";
+                cardElement.innerHTML = `
+                    <img src="${card.cardImage}" class="card-img-top" alt="${card.cardName}">
+                    <div class="card-body">
+                        <h5 class="card-title">${card.cardName}</h5>
+                        <p class="card-text">${card.hotspotToExplore}</p>
+                        <button class="btn btn-primary complete-task">完成作業</button>
+                    </div>
+                `;
+
+            const completeButton = cardElement.querySelector('.complete-task');
+            completeButton.addEventListener('click', function() {
+                addHotSpot(card.cardName, (error, result) => {
+                    if (error) {
+                        console.error("添加热点失败:", error);
+                    } else {
+                        console.log(result); // 处理成功的结果
+                        storeUserCilckButton("完成作業");
+                        cardElement.remove(); // 移除当前卡片
+                    }
+                });
+            });
+
+            exploreCardContainer.appendChild(cardElement);
+            }
+             
+        });
+        
+      })
+    })
+        .catch((error) => {
+            console.error("数据库操作失败", error);
+        });
+        } else {
+            console.error("exploreCardContainer 不存在");
+        }
+    
+          } else {
+            const databasePath = `${username}/360/${AImgName}/${currentSceneId}/explore/`;
+
+            // 確保元素存在
+            const exploreCardContainer = document.getElementById(
+              "exploreCardContainer"
+            );
+
+            // 清空之前的詳細資訊
+            if (exploreCardContainer) {
+              exploreCardContainer.innerHTML = "";
+
+              fetchExploreCardsFromDatabase(databasePath)
+                .then((exploreCards) => {
+                  // 將卡片資訊動態加入到畫面中
+                  exploreCards.forEach((card) => {
+                    const cardDetails = document.createElement("div");
+                    cardDetails.innerHTML = `
+                      <div class="card" data-card-name="${card.cardName}">
+                        <img src="${card.cardImage}" class="card-img-top" alt="${card.cardName}">
+                        <div class="card-body">
+                          <h5 class="card-title" data-card-name="${card.cardName}">卡牌名稱：${card.cardName}</h5>
+                          <h5 class="card-title" data-card-name="${card.hotspotToExplore}">熱點：${card.hotspotToExplore}</h5>
+                          <button class="btn btn-primary" onclick="editExploreCard('${card.cardName}', '${card.cardImage}')">編輯</button>
+                          <button class="btn btn-danger" onclick="deleteExploreCard('${card.cardName}')">刪除</button>
+                        </div>
+                      </div>
+                      <hr>
+                    `;
+                    // 添加卡片詳細資訊到元素中
+                    if (exploreCardContainer) {
+                      exploreCardContainer.appendChild(cardDetails);
+                    }
+                  });
+                })
+                .catch((error) => {
+                  console.error("資料庫操作失敗", error);
+                });
+            } else {
+              console.error("exploreCardContainer 不存在");
+            }
+          }
+        });
+      }
+      function fetchExploreCardsFromDatabase(databasePath) {
+        return new Promise((resolve, reject) => {
+          // 使用 Firebase 的相應方法讀取資料
+          firebase
+            .database()
+            .ref(databasePath)
+            .once("value")
+            .then((snapshot) => {
+              const exploreCards = [];
+              snapshot.forEach((cardSnapshot) => {
+                const cardData = cardSnapshot.val();
+                exploreCards.push(cardData);
+              });
+              resolve(exploreCards);
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      }
+
+      let locationMode = false;
+      function addLocation() {
+        locationMode = true;
+        alert("點選模式開啟，請點選你要的標記");
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", handleLocation);
+        }
+      }
+
+      function handleLocation(event) {
+        if (locationMode) {
+          var text = event.target.innerText;
+          console.log(text);
+          hotSpotToLocation = text;
+          console.log("hotSpotToLocation：" + hotSpotToLocation);
+          stopLocationMode();
+          initMap(hotSpotToLocation);
+          // 显示搜索框和地图
+          document.getElementById("pac-input").style.display = "block";
+          document.getElementById("map").style.display = "block";
+          // 显示地图供用户选择地点
+        }
+      }
+
+      function stopLocationMode() {
+        locationMode = false;
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", handleLocation);
+        }
+      }
+
+      let map;
+      let markers = [];
+      let mapClickListener;
+
+      function initMap(hotSpotToLocation) {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: -34.397, lng: 150.644 },
+          zoom: 13,
+        });
+
+        const input = document.getElementById("pac-input");
+        const searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        searchBox.addListener("places_changed", function () {
+          const places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          // 移除之前的点击事件监听器（如果存在）
+          if (mapClickListener) {
+            google.maps.event.removeListener(mapClickListener);
+          }
+
+          // 为地图添加新的点击事件监听器，并保存引用
+          mapClickListener = map.addListener("click", function (event) {
+            confirmLocation(
+              event.latLng.lat(),
+              event.latLng.lng(),
+              hotSpotToLocation
+            );
+          });
+
+          // 清除旧的标记并设置新的标记
+          const bounds = new google.maps.LatLngBounds();
+          places.forEach((place) => {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            new google.maps.Marker({
+              map: map,
+              title: place.name,
+              position: place.geometry.location,
+            });
+
+            if (place.geometry.viewport) {
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+      }
+
+      function confirmLocation(lat, lng, hotSpotToLocation) {
+        // 隐藏地图
+        var currentSceneId = viewer.getScene();
+        document.getElementById("map").style.display = "none";
+
+        const locationName = prompt("請輸入地標名稱:");
+        if (locationName === null) {
+          alert("尚未輸入提示地標名稱");
+          return;
+        }
+
+        const databasePath = `${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotToLocation}/location/${locationName}`;
+        const locationData = {
+          locationName: locationName,
+          lat: lat,
+          lng: lng,
+        };
+
+        // 调用 updateDatabase 函数更新数据库
+        updateDatabase(databasePath, locationData);
+      }
+
+      let seeLocationMode = false;
+      function startSeeLocationMode() {
+        seeLocationMode = true;
+        alert("點選模式開啟，請點選你要的標記");
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", seeLocation);
+        }
+      }
+
+      function seeLocation(event) {
+        if (seeLocationMode) {
+          var text = event.target.innerText;
+          console.log(text);
+          hotSpotToLocation = text;
+          console.log("seeLocationMode：" + hotSpotToLocation);
+          stopSeeLocationMode();
+          viewLocation(hotSpotToLocation);
+        }
+      }
+
+      function stopSeeLocationMode() {
+        seeLocationMode = false;
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", seeLocation);
+        }
+      }
+
+      var destLat;
+      var destLng;
+
+      // 获取用户位置（前提是用户已同意共享位置）
+      function getUserLocation(callback) {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              console.log(
+                "用户的当前位置是：纬度 " + userLat + ", 经度 " + userLng
+              );
+
+              // 调用回调函数并传递位置信息
+              if (typeof callback === "function") {
+                callback({ lat: userLat, lng: userLng });
+              }
+            },
+            function (error) {
+              // 处理错误
+              console.error("获取用户位置失败: ", error);
+
+              // 调用回调函数并传递错误信息
+              if (typeof callback === "function") {
+                callback(null, error);
+              }
+            },
+            {
+              maximumAge: 60000,
+              timeout: 5000,
+              enableHighAccuracy: true,
+            }
+          );
+        } else {
+          // 如果不支持 geolocation
+          console.error("浏览器不支持获取地理位置。");
+
+          // 调用回调函数并传递错误信息
+          if (typeof callback === "function") {
+            callback(null, "浏览器不支持获取地理位置。");
+          }
+        }
+      }
+
+      function viewLocation(hotSpotToLocation) {
+        var currentSceneId = viewer.getScene();
+        checkIfUserIsStudent(
+          loginUserName,
+          function (isStudent, yourTeacherName) {
+            if (isStudent) {
+              const path = `${yourTeacherName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotToLocation}/location/`;
+              firebase
+                .database()
+                .ref(path)
+                .once("value")
+                .then(function (snapshot) {
+                  if (snapshot.exists()) {
+                    snapshot.forEach(function (childSnapshot) {
+                      const locationData = childSnapshot.val(); // 获取每个子节点的数据
+                      if (locationData) {
+                        destLat = locationData.lat;
+                        destLng = locationData.lng;
+                        showModalWithLocation(
+                          locationData.lat,
+                          locationData.lng
+                        );
+                        console.log(
+                          "lat：" + locationData.lat,
+                          "lng：" + locationData.lng
+                        );
+                      }
+                    });
+                  } else {
+                    console.log("地標數據未找到");
+                    alert("這裡還沒有地標喔！")
+                  }
+                })
+                .catch(function (error) {
+                  console.error("讀取地標數據失败:", error);
+                });
+            } else {
+              const path = `${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotToLocation}/location/`;
+              firebase
+                .database()
+                .ref(path)
+                .once("value")
+                .then(function (snapshot) {
+                  if (snapshot.exists()) {
+                    snapshot.forEach(function (childSnapshot) {
+                      const locationData = childSnapshot.val(); // 获取每个子节点的数据
+                      if (locationData) {
+                        destLat = locationData.lat;
+                        destLng = locationData.lng;
+                        showModalWithLocation(
+                          locationData.lat,
+                          locationData.lng
+                        );
+                        console.log(
+                          "lat：" + locationData.lat,
+                          "lng：" + locationData.lng
+                        );
+                      }
+                    });
+                  } else {
+                    console.log("地标数据未找到");
+                  }
+                })
+                .catch(function (error) {
+                  console.error("读取地标数据失败:", error);
+                });
+            }
+          }
+        );
+
+        const path = `${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotToLocation}/location/`;
+        firebase
+          .database()
+          .ref(path)
+          .once("value")
+          .then(function (snapshot) {
+            if (snapshot.exists()) {
+              snapshot.forEach(function (childSnapshot) {
+                const locationData = childSnapshot.val(); // 获取每个子节点的数据
+                if (locationData) {
+                  destLat = locationData.lat;
+                  destLng = locationData.lng;
+                  showModalWithLocation(locationData.lat, locationData.lng);
+                  console.log(
+                    "lat：" + locationData.lat,
+                    "lng：" + locationData.lng
+                  );
+                }
+              });
+            } else {
+              console.log("地标数据未找到");
+            }
+          })
+          .catch(function (error) {
+            console.error("读取地标数据失败:", error);
+          });
+      }
+
+      function showModalWithLocation(lat, lng) {
+        document.getElementById("locationModal").style.display = "block";
+
+        const mapModalElement = document.getElementById("mapModal");
+        map = new google.maps.Map(mapModalElement, {
+          center: { lat: lat, lng: lng },
+          zoom: 14,
+        });
+
+        // 添加地标
+        new google.maps.Marker({
+          position: { lat: lat, lng: lng },
+          map: map,
+        });
+
+        document.getElementById("closeModal").onclick = function () {
+          document.getElementById("locationModal").style.display = "none";
+        };
+      }
+
+      // 当用户点击 "规划路线" 按钮时触发
+      function planRoute() {
+        // 获取用户的当前位置（前提是用户已同意共享位置）
+        storeUserCilckButton("規劃路線");
+        getUserLocation(function (userLocation, error) {
+          if (error) {
+            console.error("获取用户位置失败: ", error);
+            return;
+          }
+
+          // 获取地标的位置
+          const landmarkLocation = {
+            lat: destLat,
+            lng: destLng,
+          };
+
+          // 使用用户位置和地标位置计算路线
+          calculateAndDisplayRoute(userLocation, landmarkLocation);
+        });
+      }
+
+      // 根据用户位置和地标位置计算并显示路线
+      function calculateAndDisplayRoute(userLocation, landmarkLocation) {
+        // 使用 Google Maps Directions API 进行路线规划
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+
+        const map = new google.maps.Map(document.getElementById("mapModal"), {
+          center: userLocation, // 地图中心为用户位置
+          zoom: 14,
+        });
+
+        directionsRenderer.setMap(map);
+
+        const request = {
+          origin: userLocation,
+          destination: landmarkLocation,
+          travelMode: google.maps.TravelMode.DRIVING, // 可根据需要更改出行方式
+        };
+
+        // 发起导航请求
+        directionsService.route(request, (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK) {
+            // 在地图上显示导航路线
+            directionsRenderer.setDirections(result);
+          } else {
+            console.error("导航请求失败: " + status);
+          }
+        });
+      }
+
+      let soundMode = false;
+      let hotSpotToSound;
+      let mediaStream; // 定義一個全局變量來存儲媒體流
+      let recorder; // 將recorder定義為全局變量以便在不同函數間共享
+      let recordingTimer; // 用於顯示錄音時間的計時器
+      let recordingSeconds = 0; // 錄音秒數
+      let isRecording = false; // 目前是否正在錄音
+
+      function startSoundMode() {
+        soundMode = true;
+        alert("點選模式開啟，請點選你要的標記");
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", createSound);
+        }
+      }
+
+      function createSound(event) {
+        if (soundMode) {
+          var text = event.target.innerText;
+          console.log(text);
+          hotSpotToSound = text;
+          console.log("hotSpotToSound：" + hotSpotToSound);
+          stopSoundMode();
+          openSoundEffectModal();
+        }
+      }
+
+      function stopSoundMode() {
+        soundMode = false;
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", createSound);
+        }
+      }
+
+      function updateRecordingTimer() {
+        recordingSeconds++;
+        const timerElement = document.getElementById("recordingTimer");
+        timerElement.innerText = `錄音中: ${Math.floor(recordingSeconds / 60)
+          .toString()
+          .padStart(2, "0")}:${(recordingSeconds % 60)
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function startRecordingTimer() {
+        recordingSeconds = 0;
+        recordingTimer = setInterval(updateRecordingTimer, 1000);
+      }
+
+      function stopRecordingTimer() {
+        clearInterval(recordingTimer);
+        const timerElement = document.getElementById("recordingTimer");
+        timerElement.innerText = "";
+      }
+
+      function openSoundEffectModal() {
+        const modal = document.getElementById("soundEffectModal");
+        modal.style.display = "block";
+      }
+
+      function startRecording() {
+        if (isRecording) {
+          alert("已經在錄音了。");
+          return;
+        }
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then(function (stream) {
+            mediaStream = stream;
+            recorder = new RecordRTC(stream, {
+              type: "audio",
+              mimeType: "audio/webm",
+              sampleRate: 44100,
+              desiredSampRate: 16000,
+            });
+            recorder.startRecording();
+            startRecordingTimer();
+            document.getElementById("recordingIndicator").style.display =
+              "block";
+            isRecording = true;
+          })
+          .catch(function (error) {
+            console.error("無法獲取媒體流:", error);
+            alert("無法獲取麥克風，請確保已允許訪問麥克風。");
+          });
+      }
+
+      document
+        .getElementById("stopRecording")
+        .addEventListener("click", function () {
+          if (isRecording && recorder) {
+            recorder.stopRecording(function () {
+              let blob = recorder.getBlob(); // 獲取錄音的 Blob 數據
+              stopRecordingTimer(); // 停止顯示錄音時間
+              document.getElementById("recordingIndicator").style.display =
+                "none"; // 隱藏錄音指示器
+              isRecording = false; // 更新錄音狀態
+
+              // 將音效的下載 URL 和其他資訊儲存到 Realtime Database
+              const recordName = prompt("請輸入錄音名稱:"); // 讓用戶輸入音效名稱
+              if (!recordName) {
+                alert("未輸入錄音名稱。");
+                return;
+              }
+              // 定義上傳到 Firebase Storage 的路徑
+              const storageRef = firebase
+                .storage()
+                .ref(`recordings/${recordName}`);
+
+              // 開始上傳錄音檔案
+              const uploadTask = storageRef.put(blob);
+
+              uploadTask.on(
+                "state_changed",
+                function (snapshot) {
+                  // 上傳過程中的事件處理，例如進度條（可選）
+                },
+                function (error) {
+                  // 處理上傳錯誤
+                  console.error("上傳錄音失敗:", error);
+                  alert("上傳錄音失敗！");
+                },
+                function () {
+                  // 上傳成功後獲取檔案的 URL
+                  uploadTask.snapshot.ref
+                    .getDownloadURL()
+                    .then(function (downloadURL) {
+                      console.log("錄音檔案可用於", downloadURL);
+                      // 上傳成功後，將檔案的 URL 儲存到 Firebase Realtime Database
+                      saveRecordingUrlToDatabase(downloadURL, recordName);
+                    });
+                }
+              );
+            });
+          }
+        });
+
+      function saveRecordingUrlToDatabase(downloadURL, recordName) {
+        // 定義儲存到 Firebase Realtime Database 的路徑
+        var currentSceneId = viewer.getScene();
+        const databaseRef = firebase
+          .database()
+          .ref(
+            loginUserName +
+              "/360/" +
+              AImgName +
+              "/" +
+              currentSceneId +
+              "/hotspots/" +
+              hotSpotToSound +
+              "/sound/" +
+              recordName
+          );
+
+        // 儲存錄音資訊
+        databaseRef
+          .set({
+            url: downloadURL,
+            recordName: recordName,
+          })
+          .then(function () {
+            console.log("錄音 URL 已成功儲存到資料庫！");
+            alert("錄音上傳並儲存成功！");
+          })
+          .catch(function (error) {
+            console.error("儲存錄音 URL 到資料庫失敗:", error);
+          });
+      }
+
+      function closeSoundEffectModal() {
+        const modal = document.getElementById("soundEffectModal");
+        modal.style.display = "none";
+      }
+
+      // 上傳音效按鈕的事件處理器
+      function uploadSoundEffect() {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "audio/*"; // 限制選擇音效檔案
+        fileInput.click(); // 觸發用戶選擇檔案
+
+        fileInput.onchange = function (event) {
+          const file = event.target.files[0]; // 獲取用戶選擇的檔案
+          if (!file) {
+            alert("沒有選擇檔案。");
+            return;
+          }
+
+          const fileName = `sound_effect_${new Date().getTime()}_${file.name}`; // 創建唯一檔案名
+          const storageRef = firebase
+            .storage()
+            .ref(`sound_effects/${fileName}`); // 指定上傳到 Storage 的路徑
+
+          const uploadTask = storageRef.put(file); // 開始上傳檔案
+
+          uploadTask.on(
+            "state_changed",
+            function (snapshot) {
+              // 可選：處理上傳進度的回調
+              const progress =
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log("上傳進度：", progress + "%");
+            },
+            function (error) {
+              // 處理上傳失敗的回調
+              console.error("上傳音效失敗:", error);
+              alert("上傳音效失敗！");
+            },
+            function () {
+              // 上傳成功的回調
+              uploadTask.snapshot.ref
+                .getDownloadURL()
+                .then(function (downloadURL) {
+                  console.log("音效檔案可用於", downloadURL);
+                  // 提示上傳成功
+                  alert("音效上傳成功！");
+
+                  // 將音效的下載 URL 和其他資訊儲存到 Realtime Database
+                  const soundName = prompt("請輸入音效名稱:"); // 讓用戶輸入音效名稱
+                  if (!soundName) {
+                    alert("未輸入音效名稱。");
+                    return;
+                  }
+                  var currentSceneId = viewer.getScene();
+                  const databaseRef = firebase
+                    .database()
+                    .ref(
+                      loginUserName +
+                        "/360/" +
+                        AImgName +
+                        "/" +
+                        currentSceneId +
+                        "/hotspots/" +
+                        hotSpotToSound +
+                        "/sound/" +
+                        soundName
+                    );
+                  const soundEffectData = {
+                    soundName: soundName,
+                    url: downloadURL,
+                    fileName: file.name,
+                  };
+                  databaseRef.set(soundEffectData); // 將音效資訊推送到資料庫
+
+                  // 提示音效資訊已儲存
+                  alert("音效資訊已成功儲存。");
+                });
+            }
+          );
+        };
+      }
+
+      function startSeeSoundMode() {
+        soundMode = true;
+        alert("點選模式開啟，請點選你要的標記");
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", seeSound);
+        }
+      }
+
+      function seeSound(event) {
+        if (soundMode) {
+          var text = event.target.innerText;
+          console.log(text);
+          hotSpotToSound = text;
+          console.log("hotSpotToSound：" + hotSpotToSound);
+          stopSeeSoundMode();
+          fetchAndShowSoundEffect(hotSpotToSound);
+        }
+      }
+
+      function stopSeeSoundMode() {
+        soundMode = false;
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", seeSound);
+        }
+      }
+
+      // 根據提供的路徑格式從 Firebase 讀取並顯示指定熱點的音訊資料
+      function fetchAndShowSoundEffect(hotSpotName) {
+        checkIfUserIsStudent(
+          loginUserName,
+          function (isStudent, yourTeacherName) {
+            if (isStudent) {
+              // 構建從 Firebase 讀取音效資料的完整路徑
+              var currentSceneId = viewer.getScene();
+              const soundPath = `${yourTeacherName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotName}/sound/`;
+              const databaseRef = firebase.database().ref(soundPath);
+              databaseRef
+                .once("value")
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    const soundEffectData = snapshot.val();
+                    // 假設每個熱點下可能有多個音效，這裡僅取第一個音效
+                    const soundKey = Object.keys(soundEffectData)[0];
+                    const { soundName, url } = soundEffectData[soundKey];
+                    // 顯示音效信息
+                    openSoundEffectInfoModal(soundName, url);
+                  } else {
+                    console.log("沒有找到對應的音效資訊。");
+                    alert("此熱點沒有相關的音效資訊。");
+                  }
+                })
+                .catch((error) => {
+                  console.error("讀取音效資料出錯:", error);
+                });
+            } else {
+              // 構建從 Firebase 讀取音效資料的完整路徑
+              var currentSceneId = viewer.getScene();
+              const soundPath = `${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotName}/sound/`;
+              const databaseRef = firebase.database().ref(soundPath);
+              databaseRef
+                .once("value")
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    const soundEffectData = snapshot.val();
+                    // 假設每個熱點下可能有多個音效，這裡僅取第一個音效
+                    const soundKey = Object.keys(soundEffectData)[0];
+                    const { soundName, url } = soundEffectData[soundKey];
+                    // 顯示音效信息
+                    openSoundEffectInfoModal(soundName, url);
+                  } else {
+                    console.log("沒有找到對應的音效資訊。");
+                    alert("此熱點沒有相關的音效資訊。");
+                  }
+                })
+                .catch((error) => {
+                  console.error("讀取音效資料出錯:", error);
+                });
+            }
+          }
+        );
+      }
+
+      // 顯示音效資訊的模態框
+      function openSoundEffectInfoModal(name, url) {
+        const modal = document.getElementById("soundEffectInfoModal");
+        const soundNameElement = document.getElementById("soundEffectName");
+        const soundPlayerElement = document.getElementById("soundEffectPlayer");
+
+        soundNameElement.textContent = name;
+        soundPlayerElement.src = url;
+
+        modal.style.display = "block";
+
+        // 監聽播放事件
+        soundEffectPlayer.addEventListener("play", function() {
+            console.log("音效開始播放");
+            storeUserCilckButton("音效播放按鈕");
+                        // 這裡可以添加你想要執行的代碼，當音效開始播放時
+        });
+
+        // 監聽暫停事件
+        soundEffectPlayer.addEventListener("pause", function() {
+            console.log("音效暫停播放");
+            storeUserCilckButton("音效暫停按鈕");
+            // 這裡可以添加你想要執行的代碼，當音效暫停播放時
+        });
+
+      }
+
+      // 關閉模態框的函數
+      function closeSoundEffectInfoModal() {
+        const modal = document.getElementById("soundEffectInfoModal");
+        modal.style.display = "none";
+      }
+
+      document.addEventListener("mousemove", showHotSpotDebug);
+     // document.addEventListener("mouseout", hideHotSpotDebug);
+
+      function checkIfUserIsStudent(studentName, callback) {
+        // 首先檢查用戶是否是學生
+        var studentRef = firebase
+          .database()
+          .ref("userRoles/student/" + studentName);
+        studentRef.once("value", function (snapshot) {
+          if (snapshot.exists()) {
+            // 如果用戶存在於 student 節點下，則是學生
+            callback(true, snapshot.val().yourTeacherName);
+          } else {
+            // 如果用戶不在 student 節點下，檢查是否是老師
+            var teacherRef = firebase
+              .database()
+              .ref("userRoles/teacher/" + studentName);
+            teacherRef.once("value", function (snapshot) {
+              // 如果用戶存在於 teacher 節點下，則不是學生
+              callback(!snapshot.exists());
+            });
+          }
+        });
+      }
+
+      document
+        .getElementById("chatButton")
+        .addEventListener("click", function () {
+          const chatWindow = document.getElementById("chatWindow");
+          const mytext = document.getElementById("mytext");
+          const predefinedText = "請用蘇格拉底提問法與繁體中文回答我";
+
+          // 切換對話框顯示狀態
+          chatWindow.style.display =
+            chatWindow.style.display === "block" ? "none" : "block";
+          // 填入預先定義的文字
+          mytext.value = predefinedText;
+        });
+
+      // Replace the following line with your API call to ChatGPT
+      const API_KEY = "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";
+
+      const form = document.getElementById("chat-form");
+      const mytextInput = document.getElementById("mytext");
+      const chatHistory = document.getElementById("chatHistory");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const mytext = mytextInput.value.trim();
+        displayMessage(mytext, "user");
+        mytextInput.value = ""; // Clear input field after sending
+
+        // Make an API call to ChatGPT
+        try {
+          const response = await fetch(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${API_KEY}`,
+              },
+              body: JSON.stringify({
+                model: "gpt-4",
+                messages: [{ role: "user", content: mytext }],
+                temperature: 1.0,
+                top_p: 0.7,
+                n: 1,
+                stream: false,
+                presence_penalty: 0,
+                frequency_penalty: 0,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const botResponse = data.choices[0].message.content;
+            displayMessage(botResponse, "bot");
+          } else {
+            displayMessage("Error: Unable to process your request.", "bot");
+          }
+        } catch (error) {
+          console.error(error);
+          displayMessage("Error: Unable to process your request.", "bot");
+        }
+      });
+
+      function displayMessage(message, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", `${sender}-message`);
+        messageDiv.textContent = message;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to the bottom
+
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0]; // 获取日期
+        const timeString = now.toTimeString().split(' ')[0]; // 获取时间
+        const dateTimeString = `${dateString} ${timeString}`;
+
+        // 保存信息到 Firebase Realtime Database
+        var messagesRef = firebase.database().ref('/chatLog/' + loginUserName + "/" + dateTimeString);
+        messagesRef.set({
+          sender: sender,
+          message: message,
+          time: dateTimeString
+        }).then(() => console.log("chat saved successfully!"))
+          .catch((error) => console.error("Error saving chat:", error));
+      }
+
+
+
+
+      window.addEventListener("DOMContentLoaded", function (event) {
+        firebase.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            email = user.email;
+            username = email.split("@")[0];
+            loginUserName = username;
+            console.log("当前用户:", username);
+            AImgName = getQueryParam("AroundImgName"); // 从 URL 获取 AroundImgName 参数的值
+            var uploadButton = document.getElementById('uploadAroButton');
+            if (AImgName === undefined || AImgName === null || AImgName === '') {
+                      // 如果 AImgName 沒有值、是null或空字符串，顯示按鈕
+                      uploadButton.style.display = 'block';
+                  } else {
+                      // 如果 AImgName 有值，隱藏按鈕
+                      uploadButton.style.display = 'none';
+                  }
+            mapName = getQueryParam("mapName");
+            markerName = getQueryParam("markerName");
+            console.log("AImgName:", AImgName);
+            console.log("mapName：:", mapName);
+            console.log("markerName:", markerName);
+
+            // 檢查用戶是否是學生
+            checkIfUserIsStudent(
+              username,
+              function (isStudent, yourTeacherName) {
+                if (isStudent) {
+                  // 如果是學生，隱藏所有按鈕
+                  console.log("yourTeacherName：" + yourTeacherName);
+                  username = yourTeacherName;
+
+                  if (AImgName) {
+                    // 如果 AImgName 存在，则从数据库中获取相应图片的 URL 并初始化 Pannellum 查看器
+                    loadImageAndInitViewer(AImgName, yourTeacherName);
+                    AoneImgName = AImgName;
+                    AroImgName = AImgName;
+                    console.log("AroImgName:", AroImgName);
+                  }
+                  hideAllButtons();
+                  console.log("yourTeacherName：" + yourTeacherName);
+                  //startRecordingPosition();
+                } else {
+                  // 如果不是學生，顯示所有按鈕
+                  //showAllButtons();
+                  loadImageAndInitViewer(AImgName, username);
+                  AoneImgName = AImgName;
+                  AroImgName = AImgName;
+                  console.log("AroImgName:", AroImgName);
+
+              
+                }
+              }
+            );
+          } else {
+            // 用户未登录或已注销
+            username = null;
+            console.log("当前用户: 未登录");
+          }
+        });
+      });
+      function checkAuthStatus() {
+        firebase.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            // 用戶已登入
+            var username = user.email.split("@")[0]; // 使用電子郵件的 @ 前字串作為 username
+            document.getElementById(
+              "userLoginStatus"
+            ).innerHTML = `歡迎, <a href="#" id="displayName">${username}</a> <div id="dropdownMenu" class="dropdown-content">
+          <a href="profile.html">個人資料</a>
+          <a href="settings.html">設定</a>
+          <a href="#" id="logout">登出</a>
+      </div>`;
+
+            // 點擊用戶名時顯示下拉選單
+            document
+              .getElementById("displayName")
+              .addEventListener("click", function (event) {
+                event.preventDefault();
+                document.getElementById("dropdownMenu").style.display = "block";
+                event.stopPropagation(); // 阻止事件冒泡
+              });
+
+            // 點擊頁面其他地方時隱藏下拉選單
+            document.addEventListener("click", function (event) {
+              var isClickInsideElement = document
+                .getElementById("dropdownMenu")
+                .contains(event.target);
+              if (!isClickInsideElement) {
+                document.getElementById("dropdownMenu").style.display = "none";
+              }
+              var floatingBox = document.getElementById("floatingBox");
+              if (floatingBox && floatingBox.style.display === "block") {
+                floatingBox.style.display = "none";
+              }
+            });
+            document
+              .getElementById("closeModal")
+              .addEventListener("click", function () {
+                document.getElementById("locationModal").style.display = "none";
+              });
+
+            // 登出處理
+            document
+              .getElementById("logout")
+              .addEventListener("click", function () {
+                firebase
+                  .auth()
+                  .signOut()
+                  .then(() => {
+                    window.location.href = "index.html"; // 重定向到首頁或其他你希望的頁面
+                    // 登出成功，重定向或更新UI
+                  })
+                  .catch((error) => {
+                    // 處理錯誤
+                  });
+              });
+          } else {
+            // 用戶未登入
+            document
+              .getElementById("loginLink")
+              .setAttribute("href", "index.html");
+          }
+        });
+      }
+
+      // 在頁面加載時調用
+      checkAuthStatus();
+    </script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.5.0/dist/js/bootstrap.min.js"></script>
+
+    </body>
+  </body>
+</html>

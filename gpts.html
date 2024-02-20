@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatGPT 4 Test</title>
+    <style>
+        #chatButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #chatWindow {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            width: 300px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            padding: 20px;
+        }
+        #mytext {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+        }
+        .message {
+            margin-bottom: 12px;
+            padding: 8px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+        .user-message {
+            text-align: right;
+        }
+        .bot-message {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <button id="chatButton">Chat with GPT-4</button>
+    <div id="chatWindow">
+        <div id="chatHistory"></div>
+        <form id="chat-form">
+            <input type="text" id="mytext" placeholder="Enter your message" required />
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+  document.getElementById('chatButton').addEventListener('click', function() {
+      const chatWindow = document.getElementById('chatWindow');
+      const mytext = document.getElementById('mytext');
+      const predefinedText = "請用蘇格拉底提問法與繁體中文回答我";
+
+      // 切換對話框顯示狀態
+      chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
+      // 填入預先定義的文字
+      mytext.value = predefinedText;
+  });
+
+      // Replace the following line with your API call to ChatGPT
+const API_KEY = "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";
+
+const form = document.getElementById("chat-form");
+const mytextInput = document.getElementById("mytext");
+const chatHistory = document.getElementById("chatHistory");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const mytext = mytextInput.value.trim();
+    displayMessage(mytext, 'user');
+    mytextInput.value = ""; // Clear input field after sending
+
+    // Make an API call to ChatGPT
+    try {
+        const response = await fetch(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [{ role: "user", content: mytext }],
+                    temperature: 1.0,
+                    top_p: 0.7,
+                    n: 1,
+                    stream: false,
+                    presence_penalty: 0,
+                    frequency_penalty: 0,
+                }),
+            }
+        );
+
+        if (response.ok) {
+            const data = await response.json();
+            const botResponse = data.choices[0].message.content;
+            displayMessage(botResponse, 'bot');
+        } else {
+            displayMessage("Error: Unable to process your request.", 'bot');
+        }
+    } catch (error) {
+        console.error(error);
+        displayMessage("Error: Unable to process your request.", 'bot');
+    }
+});
+
+function displayMessage(message, sender) {
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", `${sender}-message`);
+    messageDiv.textContent = message;
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to the bottom
+}
+
+    </script>
+</body>
+</html>
