@@ -73,6 +73,7 @@
 
     <button id="uploadAroButton" class="btn btn-success" onclick="initializeUploadButton()">上傳檔案</button>
 
+
     <div class="row justify-content-center " id="buttonContainer">
       <div class="col-md-8">
           <div class="btn-toolbar" role="toolbar" aria-label="管理按鈕">
@@ -259,6 +260,7 @@
     }
 
 function initializeUploadButton(){
+    console.log("initializeUploadButton");
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = function(event) {
@@ -289,7 +291,8 @@ function initializeUploadButton(){
                 document.body.appendChild(link);
                 document.body.removeChild(link);
 
-                document.getElementById("uploadInput").src = downloadURL;
+
+                
                 console.log("360url" + downloadURL);
                 localStorage.setItem("recentImageUrl", downloadURL);
                 // 假设这是您初始化 viewer 的代码
@@ -422,6 +425,7 @@ function initializeUploadButton(){
           }
         );
         }
+        input.click();
       }
 
 
@@ -517,6 +521,7 @@ function initializeUploadButton(){
             }
           }
         );
+
       }
 
      //var tooltipElement = document.getElementById("tooltip");
@@ -1054,7 +1059,7 @@ function initializeUploadButton(){
 
       function hideAllButtons() {
             // 直接通过ID选择并隐藏指定的元素
-        const elementsToHide = ['buttonContainer'];
+        const elementsToHide = ['buttonContainer', 'uploadAroButton'];
         
         elementsToHide.forEach(function(id) {
             const element = document.getElementById(id);
@@ -3072,7 +3077,7 @@ function initializeUploadButton(){
         });
 
       // Replace the following line with your API call to ChatGPT
-      const API_KEY = "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";
+      const API_KEY = "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";
 
       const form = document.getElementById("chat-form");
       const mytextInput = document.getElementById("mytext");
@@ -3153,19 +3158,14 @@ function initializeUploadButton(){
             loginUserName = username;
             console.log("当前用户:", username);
             AImgName = getQueryParam("AroundImgName"); // 从 URL 获取 AroundImgName 参数的值
-            var uploadButton = document.getElementById('uploadAroButton');
-            if (AImgName === undefined || AImgName === "null" || AImgName === '') {
-                      // 如果 AImgName 沒有值、是null或空字符串，顯示按鈕
-                      uploadButton.style.display = 'block';
-                  } else {
-                      // 如果 AImgName 有值，隱藏按鈕
-                      uploadButton.style.display = 'none';
-                  }
+            console.log("AImgName：" + AImgName);
+            
             mapName = getQueryParam("mapName");
             markerName = getQueryParam("markerName");
             console.log("AImgName:", AImgName);
             console.log("mapName：:", mapName);
             console.log("markerName:", markerName);
+
 
             // 檢查用戶是否是學生
             checkIfUserIsStudent(
@@ -3193,6 +3193,18 @@ function initializeUploadButton(){
                   AoneImgName = AImgName;
                   AroImgName = AImgName;
                   console.log("AroImgName:", AroImgName);
+                  var uploadButton = document.getElementById('uploadAroButton');
+                  if (AImgName === undefined || AImgName === "null" || AImgName.trim() === '') {
+                      // 如果 AImgName 沒有值、是null或空字符串，顯示按鈕
+                      uploadButton.style.display = 'block';
+                      console.log("AImgName：" + AImgName);
+                      console.log("顯示uploadButton");
+                  } else {
+                      // 如果 AImgName 有值，隱藏按鈕
+                      uploadButton.style.display = 'none';
+                      console.log("AImgName：" + AImgName);
+                      console.log("隱藏uploadButton");
+                  }
 
               
                 }
