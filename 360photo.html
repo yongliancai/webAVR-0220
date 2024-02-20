@@ -3154,7 +3154,7 @@ function initializeUploadButton(){
             console.log("当前用户:", username);
             AImgName = getQueryParam("AroundImgName"); // 从 URL 获取 AroundImgName 参数的值
             var uploadButton = document.getElementById('uploadAroButton');
-            if (AImgName === undefined || AImgName === null || AImgName === '') {
+            if (AImgName === undefined || AImgName === "null" || AImgName === '') {
                       // 如果 AImgName 沒有值、是null或空字符串，顯示按鈕
                       uploadButton.style.display = 'block';
                   } else {
