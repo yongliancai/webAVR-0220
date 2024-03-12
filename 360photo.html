@@ -750,7 +750,7 @@ function initializeUploadButton(){
       // 停止多選模式的函數
       function stopmultiMode() {
         multiMode = false;
-        alert("標記點選完畢");
+         alert("標記點選完畢，請於下方出題");
         // 移除點擊事件監聽器
         var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
         for (var i = 0; i < hotSpotElements.length; i++) {
@@ -1188,6 +1188,8 @@ function initializeUploadButton(){
           .catch(function (error) {
             console.error("儲存多選題出錯: ", error);
           });
+       
+        
       }
 
       // 全域變數以儲存上傳的圖片 URL
@@ -1383,7 +1385,7 @@ function initializeUploadButton(){
                 pitch: 0,
                 yaw: 0,
                 type: "scene",
-                text: "回到初始场景",
+                text: "回到初始場景",
                 sceneId: "scene_1",
               };
               viewer.addHotSpot(returnHotSpot, currentSceneId);
@@ -1653,8 +1655,9 @@ function initializeUploadButton(){
               floatingBox.id = "floatingBox";
               floatingBox.style.position = "absolute";
               floatingBox.style.backgroundColor = "white";
-              floatingBox.style.padding = "10px";
+              floatingBox.style.padding = "5px";
               floatingBox.style.border = "1px solid black";
+              floatingBox.style.borderRadius = "10px"; 
               floatingBox.style.zIndex = "1000";
               document.body.appendChild(floatingBox);
             }
@@ -1665,8 +1668,9 @@ function initializeUploadButton(){
             floatingBox.innerHTML = "";
 
             var multiChoiceBtn = document.createElement("button");
-            multiChoiceBtn.textContent = "多選";
-            multiChoiceBtn.className = "btn btn-primary me-2";
+            //multiChoiceBtn.textContent = "多選";
+            //multiChoiceBtn.className = "btn btn-primary me-2";
+            multiChoiceBtn.className = "multiChoiceBtn";
             multiChoiceBtn.addEventListener("click", function () {
               handleMultiChoiceClick(username, username, isClickedHotspot);
             });
@@ -1674,22 +1678,25 @@ function initializeUploadButton(){
             floatingBox.appendChild(multiChoiceBtn);
 
             var exploreBtn = document.createElement("button");
-            exploreBtn.textContent = "探索";
-            exploreBtn.className = "btn btn-success me-2";
+            //exploreBtn.textContent = "探索";
+            //exploreBtn.className = "btn btn-success me-2";
+            exploreBtn.className = "exploreBtn";
             exploreBtn.addEventListener("click", handleExploreClick);
             floatingBox.appendChild(exploreBtn);
 
             var landmarkBtn = document.createElement("button");
-            landmarkBtn.textContent = "地標";
-            landmarkBtn.className = "btn btn-info me-2";
+            //andmarkBtn.textContent = "地標";
+            //landmarkBtn.className = "btn btn-info me-2";
+            landmarkBtn.className = "landmarkBtn";
             landmarkBtn.addEventListener("click", function () {
               handleLandmarkClick(isClickedHotspot);
             });
             floatingBox.appendChild(landmarkBtn);
 
             var audioBtn = document.createElement("button");
-            audioBtn.textContent = "音訊";
-            audioBtn.className = "btn btn-warning";
+            //audioBtn.textContent = "音訊";
+            //audioBtn.className = "btn btn-warning";
+            audioBtn.className = "audioBtn";
             audioBtn.addEventListener("click", function () {
               handleAudioClick(isClickedHotspot);
             });
@@ -1974,13 +1981,21 @@ function initializeUploadButton(){
         if (cardNameInput === null) {
           alert("尚未輸入提示卡片名稱");
           return;
+        }else{
+          alert("輸入提示卡片名稱成功，請於下方上傳提示卡片圖片");
         }
         currentEditedCardName = cardNameInput;
 
-        // 創建一個上傳按鈕
+        const container = document.createElement("div");
+        container.className = "d-flex justify-content-center";
+
         const uploadButton = document.createElement("button");
         uploadButton.textContent = "上傳圖片";
-        document.body.appendChild(uploadButton); // 可以選擇將按鈕添加到某個特定的元素中
+        uploadButton.className = "btn btn-success";
+
+        container.appendChild(uploadButton);
+
+        document.body.appendChild(container); // 假設你要將這個容器添加到body中
 
         const fileInput = document.createElement("input");
         fileInput.type = "file";
@@ -2034,18 +2049,21 @@ function initializeUploadButton(){
           const exploreCardElement = document.createElement("div");
           exploreCardElement.classList.add("card");
           exploreCardElement.dataset.cardName = cardNameInput; // 添加 data-card-name 屬性
+          exploreCardElement.dataset.cardHotspot = hotSpotToExplore;
           exploreCardElement.innerHTML = `
             <div class="card" data-card-name="${cardNameInput}">
                 <img src="${imageUrl}" class="card-img-top" alt="${cardNameInput}">
                 <div class="card-body">
                     <h5 class="card-title" data-card-name="${cardNameInput}">卡牌名稱：${cardNameInput}</h5>
-                    <h5 class="card-title" data-card-name="${hotSpotToExplore}">熱點：${hotSpotToExplore}</h5>
-                    <button class="btn btn-primary" onclick="editExploreCard('${cardNameInput}', '${imageUrl}')">編輯</button>
+                    <h5 class="card-hotspot" data-card-hotspot="${hotSpotToExplore}">熱點：${hotSpotToExplore}</h5>
+                    <button class="btn btn-primary" onclick="editExploreCard('${cardNameInput}', '${imageUrl}', '${hotSpotToExplore}')">編輯</button>
                     <button class="btn btn-danger" onclick="deleteExploreCard('${cardNameInput}')">刪除</button>
                 </div>
             </div>
             <hr>
         `;
+
+        console.log("hotSpotToExplore：" + hotSpotToExplore);
 
           // 將探索卡片加入到指定區域
           exploreCardContainer.appendChild(exploreCardElement);
@@ -2064,10 +2082,11 @@ function initializeUploadButton(){
       }
 
       // 編輯探索卡片
-      function editExploreCard(cardName, imgURL) {
+      function editExploreCard(cardName, imgURL, hotspotToExplore) {
         console.log("編輯探索卡片事件觸發");
         var currentSceneId = viewer.getScene();
         console.log("cardName：" + cardName);
+        console.log("hotspotToExplore:" + hotspotToExplore);
 
         const newCardName = prompt("請輸入新的提示卡片名稱:", cardName);
         console.log("新卡片名稱：" + newCardName);
@@ -2081,6 +2100,7 @@ function initializeUploadButton(){
             const exploreCardElement = exploreCardContainer.querySelector(
               `[data-card-name="${cardName}"]`
             );
+
             currentEditedCardName = newCardName;
 
             if (exploreCardElement) {
@@ -2105,6 +2125,7 @@ function initializeUploadButton(){
                   const exploreData = {
                     cardName: newCardName,
                     cardImage: imgURL,
+                    hotspotToExplore: hotspotToExplore
                     // 其他需要的資料
                   };
 
@@ -2265,8 +2286,8 @@ function initializeUploadButton(){
                         <img src="${card.cardImage}" class="card-img-top" alt="${card.cardName}">
                         <div class="card-body">
                           <h5 class="card-title" data-card-name="${card.cardName}">卡牌名稱：${card.cardName}</h5>
-                          <h5 class="card-title" data-card-name="${card.hotspotToExplore}">熱點：${card.hotspotToExplore}</h5>
-                          <button class="btn btn-primary" onclick="editExploreCard('${card.cardName}', '${card.cardImage}')">編輯</button>
+                          <h5 class="card-title-hotspot" data-card-name="${card.hotspotToExplore}">熱點：${card.hotspotToExplore}</h5>
+                          <button class="btn btn-primary" onclick="editExploreCard('${card.cardName}', '${card.cardImage}', '${card.hotspotToExplore}')">編輯</button>
                           <button class="btn btn-danger" onclick="deleteExploreCard('${card.cardName}')">刪除</button>
                         </div>
                       </div>
@@ -2409,6 +2430,8 @@ function initializeUploadButton(){
         if (locationName === null) {
           alert("尚未輸入提示地標名稱");
           return;
+        }else{
+          alert('輸入完畢');
         }
 
         const databasePath = `${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotToLocation}/location/${locationName}`;
@@ -2826,7 +2849,7 @@ function initializeUploadButton(){
         databaseRef
           .set({
             url: downloadURL,
-            recordName: recordName,
+            soundName: recordName,
           })
           .then(function () {
             console.log("錄音 URL 已成功儲存到資料庫！");
@@ -3077,7 +3100,7 @@ function initializeUploadButton(){
         });
 
       // Replace the following line with your API call to ChatGPT
-      const API_KEY = "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";
+      const API_KEY = "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";
 
       const form = document.getElementById("chat-form");
       const mytextInput = document.getElementById("mytext");
