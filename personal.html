@@ -42,8 +42,11 @@
         </ul>
     </nav>
 </header>
-<h1>個人頁面</h1>
-<p>尚在建置中，請稍後查看</p>
+<h1>個人頁面(建置中)</h1>
+<div id="userData"></div>
+<h3>學生名單：</h3>
+<div id="studentList">學生名單加載中...</div>
+<button id="addStudentButton" onclick="addStu()">新增學生</button>
 <script>
      // Initialize Firebase
   var firebaseConfig = {
@@ -57,11 +60,79 @@
   };
   firebase.initializeApp(firebaseConfig);
 
+  var username;
+
+
+  function addStu(){
+  var studentEmail = prompt('請輸入學生email:');
+  if (studentEmail) {
+    var usernamePart = studentEmail.split('@')[0];
+    // 首先檢查學生是否存在於 userRoles/student 下
+    var studentRef = firebase.database().ref('userRoles/student/' + usernamePart);
+    studentRef.once('value', snapshot => {
+      if (snapshot.exists()) {
+        // 學生存在，進行新增操作
+        // 假設已經有一個變量 `username` 存儲了當前教師的用戶名
+        var newStudentRef = firebase.database().ref('userRoles/teacher/' + username + '/yourStudenetName/' + usernamePart);
+        newStudentRef.set(true).then(function() {
+          alert('學生新增成功');
+          loadStudentList(); // 重新加載學生名單
+          studentRef.set({
+            yourTeacherName: username
+          }).catch(function(error){
+            console.log('學生新增老師失敗: ' + error.message);
+          })
+        }).catch(function(error) {
+          alert('新增學生失敗: ' + error.message);
+        });
+      } else {
+        // 學生不存在，提示用戶
+        alert('新增失敗: 無此學生');
+      }
+    });
+  }
+}
+
+
+  function loadStudentList() {
+    var studentListRef = firebase.database().ref('userRoles/teacher/' + username + '/yourStudenetName');
+    studentListRef.once('value', function(snapshot) {
+      var students = snapshot.val();
+      var content = '';
+      if (students) {
+        for (var student in students) {
+          content += '<p>' + student + '</p>';
+        }
+      } else {
+        content = '目前無學生';
+      }
+      document.getElementById('studentList').innerHTML = content;
+    });
+  }
+
+
+
+
+
     function checkAuthStatus() {
     firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
         // 用戶已登入
-        var username = user.email.split("@")[0]; // 使用電子郵件的 @ 前字串作為 username
+        username = user.email.split("@")[0]; // 使用電子郵件的 @ 前字串作為 username
+        var userRef = firebase.database().ref('users/' + username);
+        userRef.once('value').then(function(snapshot) {
+          var userData = snapshot.val();
+
+          var email = userData.email || '無';
+          var isTeacher = userData.isTeacher ? '老師' : '學生';
+          var name = userData.name || '匿名';
+
+          var userInfoHTML = `<p>姓名: ${name}</p>
+                               <p>身份: ${isTeacher}</p>
+                               <p>電子郵件: ${email}</p>`;
+
+          document.getElementById("userData").innerHTML = userInfoHTML;
+      })
         document.getElementById(
           "userLoginStatus"
         ).innerHTML = `歡迎, <a href="#" id="displayName">${username}</a> <div id="dropdownMenu" class="dropdown-content">
@@ -89,6 +160,7 @@
           }
         });
 
+        loadStudentList();
         // 登出處理
         document
           .getElementById("logout")
