@@ -57,12 +57,17 @@
 
 
   <div class="container">
+    
     <div id="panoramaDiv" class="row justify-content-center">
+      <div id="sidebar">
+        <div id="thumbnails"></div>
+      </div>
         <div class="col-md-8">
             <div id="panorama"></div>
         </div>
         <div id="exploreCardContainerStu"></div>
     </div>
+
     <!-- <div id="tooltip" class="tooltip"></div> -->
     <div id="yawPitchDiv"class="row justify-content-center">
       <div class="col-md-8 mb-4">
@@ -81,7 +86,7 @@
                   <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('hotSpot')">標記</button>
               </div>
               <div class="btn-group me-2" role="group" aria-label="傳送管理">
-                  <button class="btn btn-outline-success btn-lg" onclick="toggleImageUploadSection()">傳送</button>
+                  <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('transmit')">傳送</button>
               </div>
               <div class="btn-group me-2" role="group" aria-label="探索管理">
                   <button class="btn btn-outline-success btn-lg" onclick="toggleSubButtons('explore')">探索</button>
@@ -106,6 +111,10 @@
             <div class="sub-buttons" id="hotSpotButtons">
               <button class="btn btn-primary" onclick="addHotSpot()">新增標記</button>
               <button class="btn btn-warning" onclick="startDeleteMode()">刪除標記</button>
+            </div>  
+            <div class="sub-buttons" id="transmitButtons">
+              <button class="btn btn-primary" onclick="toggleImageUploadSection()">新增傳送</button>
+              <button class="btn btn-warning" onclick="startDeleteTspot()">刪除傳送</button>
             </div>  
             <div class="sub-buttons" id="exploreButtons">
               <button class="btn btn-primary" onclick="addExploreCard()">新增探索</button>
@@ -248,7 +257,7 @@
 
       var mapName;
       var markerName;
-
+      var slideCount = 0;
 
       function toggleSubButtons(buttonId) {
         var subButtons = document.getElementById(buttonId + 'Buttons');
@@ -292,7 +301,6 @@ function initializeUploadButton(){
                 document.body.removeChild(link);
 
 
-                
                 console.log("360url" + downloadURL);
                 localStorage.setItem("recentImageUrl", downloadURL);
                 // 假设这是您初始化 viewer 的代码
@@ -311,6 +319,9 @@ function initializeUploadButton(){
                     },
                   },
                 });
+
+                createSlide(URL.createObjectURL(file));
+
                 // 定期检查 viewer 是否已加载完成
                 var checkViewerLoaded = setInterval(function () {
                   if (viewer.isLoaded()) {
@@ -420,7 +431,7 @@ function initializeUploadButton(){
                   }
                 });
 
-                updateLastScene();
+                
               });
           }
         );
@@ -884,6 +895,7 @@ function initializeUploadButton(){
                 );
                 // 更新图像名称变量
                 updateImageNameVariables(tfileName);
+                //createSlide(file);
               });
 
             alert("圖片已成功上傳，點選傳送點，即可傳送");
@@ -1008,6 +1020,7 @@ function initializeUploadButton(){
           console.error("添加新场景 " + sceneId + " 失败: ", error);
         }
         addTSpot(yaw, pitch, text, sceneId);
+        createSlide(imageUrl);
         console.log("新增Tspot");
       }
 
@@ -1057,6 +1070,89 @@ function initializeUploadButton(){
         viewer.addHotSpot(newHotSpot, sceneId);
       }
 
+
+
+      let deleteTspotMode = false;
+      
+      function startDeleteTspot(){
+        deleteTspotMode = true;
+        alert("刪除傳送模式開啟，請點選你要刪除的標記");
+
+        // 添加點擊事件監聽器到熱點元素
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].addEventListener("click", handleTspotClick);
+        }
+      }
+
+      function stopDeleteTspot(){
+        deleteTspotMode = false;
+
+        // 移除點擊事件監聽器
+        var hotSpotElements = document.getElementsByClassName("pnlm-hotspot");
+        for (var i = 0; i < hotSpotElements.length; i++) {
+          hotSpotElements[i].removeEventListener("click", handleTspotClick);
+        }
+      }
+
+            // 處理點擊熱點事件
+      function handleTspotClick(event) {
+        if (deleteTspotMode) {
+          var text = event.target.innerText;
+          tspotToDelete = text;
+          console.log("tspotToDelete：" + tspotToDelete);
+          deleteTspot(text);
+        }
+      }
+
+
+      // 刪除熱點
+      function deleteTspot(text) {
+        // 從 Firebase 資料庫刪除相應的熱點
+        // 檢查 AImgName 是否有值
+        //var AImgName = getQueryParam("AroundImgName");
+        var currentSceneId = viewer.getScene();
+        console.log("currentSceneId：" + currentSceneId);
+        var refPath = username + "/360/" + AImgName + "/" + currentSceneId + "/tspots/" + text;
+        var sceneNumber = parseInt(currentSceneId.match(/\d+/)[0], 10);
+        // 數字加1
+        sceneNumber += 1;
+        // 拼接回原來的格式
+        var newSceneId = "scene_" + sceneNumber;
+        
+        var scenePath = username + "/360/" + AImgName + "/" + newSceneId;
+        console.log(refPath);
+        firebase.database().ref(refPath).remove(function (error) {
+            if (error) {
+              console.log("Error deleting tspot:", error);
+            } else {
+              console.log("tspot deleted successfully!");
+
+              // 在DOM中也刪除該熱點
+              var hotSpotElement = document.querySelector(
+                `[data-hotspot-id="${text}"]`
+              );
+              if (hotSpotElement) {
+                hotSpotElement.parentNode.removeChild(hotSpotElement);
+              }
+
+              // 顯示刪除成功的警示視窗
+              alert("刪除傳送點成功");
+              reloadImageWithHotspots();
+            }
+          });
+          firebase.database().ref(scenePath).remove(function (error) {
+            if (error) {
+              console.log("Error deleting scene:", error);
+            } else {
+              console.log("scene deleted successfully!");
+            }
+          });
+      }
+
+
+
+
       function hideAllButtons() {
             // 直接通过ID选择并隐藏指定的元素
         const elementsToHide = ['buttonContainer', 'uploadAroButton'];
@@ -1068,14 +1164,6 @@ function initializeUploadButton(){
             }
         });
       }
-
-      // function showAllButtons() {
-      //   // 顯示所有按鈕
-      //   console.log("正在顯示所有按鈕");
-      //   document.querySelectorAll("button").forEach(function (button) {
-      //     button.style.display = "block";
-      //   });
-      // }
 
       function getQueryParam(param) {
         const queryParams = new URLSearchParams(window.location.search);
@@ -1214,7 +1302,7 @@ function initializeUploadButton(){
               hotSpotDebug: true,
             };
             console.log("data object:", data);
-
+            createSlide(data.scene_1.URL);
             // 循环添加其他场景的配置
             Object.keys(data).forEach(function (sceneKey) {
               if (sceneKey !== "scene_1") {
@@ -1226,6 +1314,7 @@ function initializeUploadButton(){
                   hotSpots: [], // 根据需要设置热点信息
                   hotSpotDebug: true,
                 };
+                createSlide(data[sceneKey].URl);
               }
             });
 
@@ -3013,7 +3102,7 @@ function initializeUploadButton(){
                     const soundKey = Object.keys(soundEffectData)[0];
                     const { soundName, url } = soundEffectData[soundKey];
                     // 顯示音效信息
-                    openSoundEffectInfoModal(soundName, url);
+                    openSoundEffectInfoModal(soundName, url, hotSpotName);
                   } else {
                     console.log("沒有找到對應的音效資訊。");
                     alert("此熱點沒有相關的音效資訊。");
@@ -3027,8 +3116,10 @@ function initializeUploadButton(){
         );
       }
 
+      
+
       // 顯示音效資訊的模態框
-      function openSoundEffectInfoModal(name, url) {
+      function openSoundEffectInfoModal(name, url, hotSpotName) {
         const modal = document.getElementById("soundEffectInfoModal");
         const soundNameElement = document.getElementById("soundEffectName");
         const soundPlayerElement = document.getElementById("soundEffectPlayer");
@@ -3037,6 +3128,17 @@ function initializeUploadButton(){
         soundPlayerElement.src = url;
 
         modal.style.display = "block";
+
+
+         // 新增刪除按鈕到模態框中
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '刪除音訊';
+        deleteButton.className = "btn btn-warning";
+        deleteButton.onclick = function() {
+          deleteSoundEffect(name, hotSpotName);
+        };
+        // 假設 modalContent 是你模態框內容的容器
+        modal.appendChild(deleteButton);
 
         // 監聽播放事件
         soundEffectPlayer.addEventListener("play", function() {
@@ -3052,6 +3154,22 @@ function initializeUploadButton(){
             // 這裡可以添加你想要執行的代碼，當音效暫停播放時
         });
 
+      }
+
+      function deleteSoundEffect(soundName, hotSpotName) {
+        var currentSceneId = viewer.getScene();
+        const databaseRef = firebase.database().ref(`${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotName}/sound/${soundName}`);
+        databaseRef.remove()
+          .then(() => {
+            alert('音訊刪除成功');
+            // 這裡添加代碼來處理畫面上音效資訊的移除，可能需要關閉模態框或刷新音效列表
+            // ...
+            closeSoundEffectInfoModal();
+          })
+          .catch((error) => {
+            console.error('刪除音效出錯:', error);
+            alert('刪除音效失敗: ' + error.message);
+          });
       }
 
       // 關閉模態框的函數
@@ -3169,9 +3287,49 @@ function initializeUploadButton(){
         }).then(() => console.log("chat saved successfully!"))
           .catch((error) => console.error("Error saving chat:", error));
       }
+    
+      
+      function createSlide(imageUrl) {
+        // 創建縮圖容器
+        const thumbnail = document.createElement("div");
+        thumbnail.classList.add("thumbnail");
+        slideCount++;
+        const thumbnailId = "scene_" + slideCount;
+        thumbnail.setAttribute("id", thumbnailId);
+          // 圖片
+          const img = document.createElement("img");
+          img.src = imageUrl;
+          thumbnail.appendChild(img);
 
+          // 編號標籤
+          const numberLabel = document.createElement("div");
+          numberLabel.classList.add("thumbnail-number");
+        
+          numberLabel.textContent = thumbnailId;
+          thumbnail.appendChild(numberLabel);
 
+          // 刪除按鈕（如前所述）
+          const deleteBtn = document.createElement("button");
+          deleteBtn.classList.add("delete-btn");
+          deleteBtn.textContent = "X";
+          deleteBtn.onclick = function () {
+            thumbnail.remove(); // 移除縮圖元素
+            database.ref("scenes/" + childSnapshot.key).remove(); // 從Firebase中刪除
+            slideCount = slideCount - 1;
+          };
+          // thumbnail.appendChild(deleteBtn);
 
+          // 添加點擊事件，用於將此場景設為當前編輯場景
+          thumbnail.onclick = function (event) {
+            if (event.target !== deleteBtn) {
+              const clickedThumbnailId = event.currentTarget.id; // 或者使用 event.currentTarget.id
+              console.log("clickedThumbnailId：" + clickedThumbnailId);
+              viewer.loadScene(clickedThumbnailId);
+            }
+          };
+          // 將縮圖添加到縮圖容器中
+          document.getElementById("thumbnails").appendChild(thumbnail);
+        }
 
       window.addEventListener("DOMContentLoaded", function (event) {
         firebase.auth().onAuthStateChanged(function (user) {
