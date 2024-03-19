@@ -245,4 +245,101 @@ input[type="text"] {
     box-sizing: border-box; /* 盒子模型設定，防止邊框影響最終尺寸 */
 }
 
+.multiChoiceBtn {
+    width: 50px; /* 按钮宽度 */
+    height: 50px; /* 按钮高度 */
+    background-image: url('question.png'); /* 按钮背景图片的URL */
+    background-size: cover; /* 让图片填充按钮 */
+    background-color: transparent; /* 设置背景颜色为透明 */
+    border: none; /* 移除按钮边框 */
+    cursor: pointer; /* 光标样式为手型 */
+    transition: background-color 0.3s; /* 添加过渡效果，使颜色变化平滑 */
+  }
+  .exploreBtn {
+    width: 50px; /* 按钮宽度 */
+    height: 50px; /* 按钮高度 */
+    background-image: url('explore.png'); /* 按钮背景图片的URL */
+    background-size: cover; /* 让图片填充按钮 */
+    background-color: transparent; /* 设置背景颜色为透明 */
+    border: none; /* 移除按钮边框 */
+    cursor: pointer; /* 光标样式为手型 */
+    transition: background-color 0.3s; /* 添加过渡效果，使颜色变化平滑 */
+  }
+
+  .landmarkBtn {
+    width: 50px; /* 按钮宽度 */
+    height: 50px; /* 按钮高度 */
+    background-image: url('landmark.png'); /* 按钮背景图片的URL */
+    background-size: cover; /* 让图片填充按钮 */
+    background-color: transparent; /* 设置背景颜色为透明 */
+    border: none; /* 移除按钮边框 */
+    cursor: pointer; /* 光标样式为手型 */
+    transition: background-color 0.3s; /* 添加过渡效果，使颜色变化平滑 */
+  }
+
+  .audioBtn {
+    width: 50px; /* 按钮宽度 */
+    height: 50px; /* 按钮高度 */
+    background-image: url('sound.png'); /* 按钮背景图片的URL */
+    background-size: cover; /* 让图片填充按钮 */
+    background-color: transparent; /* 设置背景颜色为透明 */
+    border: none; /* 移除按钮边框 */
+    cursor: pointer; /* 光标样式为手型 */
+    transition: background-color 0.3s; /* 添加过渡效果，使颜色变化平滑 */
+  }
+
+
+/* 悬停效果 */
+.multiChoiceBtn:hover, .exploreBtn:hover, .landmarkBtn:hover, .audioBtn:hover {
+    background-color: rgba(0, 0, 0, 0.1); /* 设置悬停时的背景颜色，可以是半透明的灰色 */
+}
+
+/* 点击效果 */
+.multiChoiceBtn:active, .exploreBtn:active, .landmarkBtn:active, .audioBtn:active {
+    background-color: rgba(0, 0, 0, 0.2); /* 设置点击时的背景颜色，可以是稍微更深的灰色 */
+}
+
   
+#sidebar {
+    width: 200px;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+  }
+
+  #editor {
+    flex-grow: 1;
+    padding: 20px;
+  }
+
+  .thumbnail {
+    width: 100px; /* 固定縮圖的寬度 */
+    height: 100px; /* 固定縮圖的高度 */
+    overflow: hidden; /* 隱藏超出部分 */
+    position: relative; /* 爲了能夠正確放置圖片和文字 */
+    margin: 10px;
+    cursor: pointer;
+  }
+  .thumbnail-number {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 2px 5px;
+    font-size: 12px;
+  }
+
+  .thumbnail img {
+    width: 100%; /* 使圖片填滿縮圖容器 */
+    height: 100%; /* 使圖片填滿縮圖容器 */
+    object-fit: cover; /* 保持圖片的宽高比 */
+  }
+  .delete-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(255, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
