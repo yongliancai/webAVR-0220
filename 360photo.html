@@ -3157,19 +3157,26 @@ function initializeUploadButton(){
       }
 
       function deleteSoundEffect(soundName, hotSpotName) {
-        var currentSceneId = viewer.getScene();
-        const databaseRef = firebase.database().ref(`${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotName}/sound/${soundName}`);
-        databaseRef.remove()
-          .then(() => {
-            alert('音訊刪除成功');
-            // 這裡添加代碼來處理畫面上音效資訊的移除，可能需要關閉模態框或刷新音效列表
-            // ...
-            closeSoundEffectInfoModal();
-          })
-          .catch((error) => {
-            console.error('刪除音效出錯:', error);
-            alert('刪除音效失敗: ' + error.message);
-          });
+        checkIfUserIsStudent(loginUserName, function(isStudent, yourTeacherName){
+          if(isStudent){
+            console.log("你是學生，不顯示");
+          }else{
+            var currentSceneId = viewer.getScene();
+            const databaseRef = firebase.database().ref(`${loginUserName}/360/${AImgName}/${currentSceneId}/hotspots/${hotSpotName}/sound/${soundName}`);
+            databaseRef.remove()
+              .then(() => {
+                alert('音訊刪除成功');
+                // 這裡添加代碼來處理畫面上音效資訊的移除，可能需要關閉模態框或刷新音效列表
+                // ...
+                closeSoundEffectInfoModal();
+              })
+              .catch((error) => {
+                console.error('刪除音效出錯:', error);
+                alert('刪除音效失敗: ' + error.message);
+              });
+          }
+        });
+        
       }
 
       // 關閉模態框的函數
@@ -3290,45 +3297,54 @@ function initializeUploadButton(){
     
       
       function createSlide(imageUrl) {
-        // 創建縮圖容器
-        const thumbnail = document.createElement("div");
-        thumbnail.classList.add("thumbnail");
-        slideCount++;
-        const thumbnailId = "scene_" + slideCount;
-        thumbnail.setAttribute("id", thumbnailId);
-          // 圖片
-          const img = document.createElement("img");
-          img.src = imageUrl;
-          thumbnail.appendChild(img);
+        checkIfUserIsStudent(loginUserName, function(isStudent, yourTeacherName){
+            if(isStudent){
+                console.log("縮圖不顯示，你是學生");
+            }else{
+              // 創建縮圖容器
 
-          // 編號標籤
-          const numberLabel = document.createElement("div");
-          numberLabel.classList.add("thumbnail-number");
-        
-          numberLabel.textContent = thumbnailId;
-          thumbnail.appendChild(numberLabel);
+              const thumbnail = document.createElement("div");
+              thumbnail.classList.add("thumbnail");
+              slideCount++;
+              const thumbnailId = "scene_" + slideCount;
+              thumbnail.setAttribute("id", thumbnailId);
+                // 圖片
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                thumbnail.appendChild(img);
 
-          // 刪除按鈕（如前所述）
-          const deleteBtn = document.createElement("button");
-          deleteBtn.classList.add("delete-btn");
-          deleteBtn.textContent = "X";
-          deleteBtn.onclick = function () {
-            thumbnail.remove(); // 移除縮圖元素
-            database.ref("scenes/" + childSnapshot.key).remove(); // 從Firebase中刪除
-            slideCount = slideCount - 1;
-          };
-          // thumbnail.appendChild(deleteBtn);
+                // 編號標籤
+                const numberLabel = document.createElement("div");
+                numberLabel.classList.add("thumbnail-number");
+              
+                numberLabel.textContent = thumbnailId;
+                thumbnail.appendChild(numberLabel);
 
-          // 添加點擊事件，用於將此場景設為當前編輯場景
-          thumbnail.onclick = function (event) {
-            if (event.target !== deleteBtn) {
-              const clickedThumbnailId = event.currentTarget.id; // 或者使用 event.currentTarget.id
-              console.log("clickedThumbnailId：" + clickedThumbnailId);
-              viewer.loadScene(clickedThumbnailId);
+                // 刪除按鈕（如前所述）
+                const deleteBtn = document.createElement("button");
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.textContent = "X";
+                deleteBtn.onclick = function () {
+                  thumbnail.remove(); // 移除縮圖元素
+                  database.ref("scenes/" + childSnapshot.key).remove(); // 從Firebase中刪除
+                  slideCount = slideCount - 1;
+                };
+                // thumbnail.appendChild(deleteBtn);
+
+                // 添加點擊事件，用於將此場景設為當前編輯場景
+                thumbnail.onclick = function (event) {
+                  if (event.target !== deleteBtn) {
+                    const clickedThumbnailId = event.currentTarget.id; // 或者使用 event.currentTarget.id
+                    console.log("clickedThumbnailId：" + clickedThumbnailId);
+                    viewer.loadScene(clickedThumbnailId);
+                  }
+                };
+
+               // 將縮圖添加到縮圖容器中
+                document.getElementById("thumbnails").appendChild(thumbnail);
             }
-          };
-          // 將縮圖添加到縮圖容器中
-          document.getElementById("thumbnails").appendChild(thumbnail);
+          })
+
         }
 
       window.addEventListener("DOMContentLoaded", function (event) {
