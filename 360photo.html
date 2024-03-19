@@ -3130,15 +3130,22 @@ function initializeUploadButton(){
         modal.style.display = "block";
 
 
-         // 新增刪除按鈕到模態框中
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = '刪除音訊';
-        deleteButton.className = "btn btn-warning";
-        deleteButton.onclick = function() {
-          deleteSoundEffect(name, hotSpotName);
-        };
-        // 假設 modalContent 是你模態框內容的容器
-        modal.appendChild(deleteButton);
+        checkIfUserIsStudent(loginUserName, function(isStudent, yourTeacherName){
+          if(isStudent){
+
+          }else{
+            // 新增刪除按鈕到模態框中
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '刪除音訊';
+            deleteButton.className = "btn btn-warning";
+            deleteButton.onclick = function() {
+              deleteSoundEffect(name, hotSpotName);
+            };
+            // 假設 modalContent 是你模態框內容的容器
+            modal.appendChild(deleteButton);
+          }
+        });
+
 
         // 監聽播放事件
         soundEffectPlayer.addEventListener("play", function() {
@@ -3372,7 +3379,8 @@ function initializeUploadButton(){
                   // 如果是學生，隱藏所有按鈕
                   console.log("yourTeacherName：" + yourTeacherName);
                   username = yourTeacherName;
-
+                  var sidebar = document.getElementById("sidebar");
+                  sidebar.style.display = "none";
                   if (AImgName) {
                     // 如果 AImgName 存在，则从数据库中获取相应图片的 URL 并初始化 Pannellum 查看器
                     loadImageAndInitViewer(AImgName, yourTeacherName);
